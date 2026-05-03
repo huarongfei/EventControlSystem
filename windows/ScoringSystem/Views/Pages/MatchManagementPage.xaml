@@ -1,0 +1,742 @@
+<UserControl x:Class="ScoringSystem.Views.Pages.MatchManagementPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:ScoringSystem.ViewModels">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#12121a" Padding="28,20"
+                BorderBrush="#2a2a3e" BorderThickness="0,0,0,1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="比赛管理" Foreground="White" FontSize="22" FontWeight="Bold"/>
+                    <TextBlock Text="创建、编辑和管理比赛" Foreground="#8b8b9e" FontSize="13" Margin="0,4,0,0"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Border Background="#1a1a28" CornerRadius="8" Padding="12,6" Margin="0,0,12,0">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="8" Height="8" Margin="0,0,6,0" VerticalAlignment="Center">
+                                <Ellipse.Style>
+                                    <Style TargetType="Ellipse">
+                                        <Setter Property="Fill" Value="#555"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                                <Setter Property="Fill" Value="#06d6a0"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Ellipse.Style>
+                            </Ellipse>
+                            <TextBlock Text="{Binding ServerUrl}" Foreground="#8b8b9e"
+                                       FontSize="12" FontFamily="Consolas"/>
+                        </StackPanel>
+                    </Border>
+                    <Button Content="📅 创建赛事" Command="{Binding OpenCreateEventDialogCommand}"
+                            Background="#7209b7" Foreground="White"
+                            Padding="14,8" FontSize="13" FontWeight="SemiBold" BorderThickness="0" Cursor="Hand"
+                            Margin="0,0,8,0">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="bd" Background="{TemplateBinding Background}"
+                                        CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="bd" Property="Background" Value="#5a08a0"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                    <Button Content="➕ 创建比赛" Command="{Binding OpenCreateMatchDialogCommand}"
+                            Background="#4361ee" Foreground="White"
+                            Padding="14,8" FontSize="13" FontWeight="SemiBold" BorderThickness="0" Cursor="Hand">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="bd" Background="{TemplateBinding Background}"
+                                        CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="bd" Property="Background" Value="#3a56d4"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Content -->
+        <Grid Grid.Row="1" Margin="28,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="260"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Panel: Events & Filters -->
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Filter Tabs -->
+                <TextBlock Grid.Row="0" Text="筛选状态" Foreground="#8b8b9e" FontSize="11" FontWeight="Bold"
+                           Margin="0,0,0,8"/>
+                <UniformGrid Grid.Row="1" Columns="2" Margin="0,0,0,12">
+                    <Button Command="{Binding FilterMatchesCommand}" CommandParameter="all"
+                            Margin="0,0,4,4" Padding="8,6" FontSize="11" BorderThickness="0" Cursor="Hand">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="bd" CornerRadius="8" Padding="{TemplateBinding Padding}"
+                                        Background="{TemplateBinding Background}">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding MatchFilter}" Value="all">
+                                        <Setter TargetName="bd" Property="Background" Value="#4361ee"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding MatchFilter}" Value="all">
+                                        <Setter Property="Foreground" Value="White"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding MatchFilter}" Value="not all">
+                                        <Setter Property="Foreground" Value="#8b8b9e"/>
+                                    </DataTrigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                        <TextBlock Text="全部" Foreground="#8b8b9e" FontSize="11"/>
+                    </Button>
+                    <Button Command="{Binding FilterMatchesCommand}" CommandParameter="upcoming"
+                            Margin="4,0,0,4" Padding="8,6" FontSize="11" BorderThickness="0" Cursor="Hand">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="bd" CornerRadius="8" Padding="{TemplateBinding Padding}"
+                                        Background="Transparent">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding MatchFilter}" Value="upcoming">
+                                        <Setter TargetName="bd" Property="Background" Value="#4361ee"/>
+                                    </DataTrigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                        <TextBlock Text="未开始" Foreground="#8b8b9e" FontSize="11"/>
+                    </Button>
+                    <Button Command="{Binding FilterMatchesCommand}" CommandParameter="live"
+                            Margin="0,4,4,0" Padding="8,6" FontSize="11" BorderThickness="0" Cursor="Hand">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="bd" CornerRadius="8" Padding="{TemplateBinding Padding}"
+                                        Background="Transparent">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding MatchFilter}" Value="live">
+                                        <Setter TargetName="bd" Property="Background" Value="#4361ee"/>
+                                    </DataTrigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                        <TextBlock Text="进行中" Foreground="#8b8b9e" FontSize="11"/>
+                    </Button>
+                    <Button Command="{Binding FilterMatchesCommand}" CommandParameter="finished"
+                            Margin="4,4,0,0" Padding="8,6" FontSize="11" BorderThickness="0" Cursor="Hand">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="bd" CornerRadius="8" Padding="{TemplateBinding Padding}"
+                                        Background="Transparent">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding MatchFilter}" Value="finished">
+                                        <Setter TargetName="bd" Property="Background" Value="#4361ee"/>
+                                    </DataTrigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                        <TextBlock Text="已结束" Foreground="#8b8b9e" FontSize="11"/>
+                    </Button>
+                </UniformGrid>
+
+                <!-- Events List -->
+                <TextBlock Grid.Row="0" Text="📅 赛事" Foreground="#8b8b9e" FontSize="13" FontWeight="SemiBold"
+                           Margin="0,60,0,12"/>
+                <Border Grid.Row="2" Background="#12121a" CornerRadius="12">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="8">
+                        <ItemsControl ItemsSource="{Binding Events}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Command="{Binding DataContext.SelectEventForManagementCommand,
+                                                              RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}"
+                                            Background="Transparent" BorderThickness="0"
+                                            Cursor="Hand" HorizontalAlignment="Stretch" Margin="0,2">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="bd" CornerRadius="10" Padding="14,12">
+                                                    <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Setter Property="Background" Value="Transparent"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsSelectedForManagement}" Value="True">
+                                                                    <Setter Property="Background" Value="#252538"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <Border Grid.Column="0" Background="#4361ee"
+                                                                Width="36" Height="36" CornerRadius="8"
+                                                                Margin="0,0,12,0">
+                                                            <TextBlock Text="🏆" FontSize="16"
+                                                                       HorizontalAlignment="Center"
+                                                                       VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding Name}" Foreground="White"
+                                                                       FontSize="13" FontWeight="SemiBold"
+                                                                       TextTrimming="CharacterEllipsis"/>
+                                                            <TextBlock Text="{Binding MatchCount, StringFormat='{}{0} 场比赛'}"
+                                                                       Foreground="#5a5a6e" FontSize="11" Margin="0,2,0,0"/>
+                                                        </StackPanel>
+                                                        <Button Grid.Column="2" Command="{Binding DataContext.DeleteEventCommand,
+                                                              RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                CommandParameter="{Binding}"
+                                                                Background="Transparent" BorderThickness="0"
+                                                                Cursor="Hand" ToolTip="删除赛事"
+                                                                Margin="8,0,0,0" VerticalAlignment="Center">
+                                                            <TextBlock Text="🗑" FontSize="14" Foreground="#ef233c"/>
+                                                            <Button.Template>
+                                                                <ControlTemplate TargetType="Button">
+                                                                    <Border x:Name="bd" Background="{TemplateBinding Background}"
+                                                                            CornerRadius="6" Padding="6">
+                                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                    </Border>
+                                                                    <ControlTemplate.Triggers>
+                                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                                            <Setter TargetName="bd" Property="Background" Value="#3d0d0d"/>
+                                                                        </Trigger>
+                                                                    </ControlTemplate.Triggers>
+                                                                </ControlTemplate>
+                                                            </Button.Template>
+                                                        </Button>
+                                                    </Grid>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="bd" Property="Background" Value="#1e1e2e"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Border>
+            </Grid>
+
+            <!-- Right Panel: Matches -->
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Toolbar -->
+                <Grid Grid.Row="0" Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="{Binding MatchesCountLabel}" Foreground="#8b8b9e"
+                               FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    <Button Grid.Column="1" Content="🔄 刷新" Command="{Binding LoadMatchesForManagementCommand}"
+                            Background="#252538" Foreground="#8b8b9e"
+                            Padding="14,8" FontSize="12" BorderThickness="0" Cursor="Hand">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="bd" Background="{TemplateBinding Background}"
+                                        CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="bd" Property="Background" Value="#2a2a3e"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </Grid>
+
+                <!-- Empty State -->
+                <Border Grid.Row="1" Background="#12121a" CornerRadius="12"
+                        Visibility="{Binding HasNoManagedMatches, Converter={StaticResource BoolToVisConverter}}">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock Text="📋" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                        <TextBlock Text="暂无比赛" Foreground="#5a5a6e" FontSize="16" HorizontalAlignment="Center"/>
+                        <TextBlock Text="点击「创建比赛」添加新的比赛" Foreground="#3a3a5e" FontSize="13"
+                                   HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Matches List -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
+                              Visibility="{Binding HasManagedMatches, Converter={StaticResource BoolToVisConverter}}">
+                    <ItemsControl ItemsSource="{Binding ManagedMatches}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="#1a1a28" CornerRadius="16"
+                                        Padding="24,20" Margin="0,0,0,12">
+                                    <Border.Effect>
+                                        <DropShadowEffect ShadowDepth="0" BlurRadius="20" Color="#000000" Opacity="0.3"/>
+                                    </Border.Effect>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Match Info -->
+                                        <StackPanel Grid.Column="0">
+                                            <!-- Status Badge -->
+                                            <Border CornerRadius="6" Padding="10,4" HorizontalAlignment="Left" Margin="0,0,0,8">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Background" Value="#252538"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Status}" Value="not_started">
+                                                                <Setter Property="Background" Value="#2a2a0d"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Status}" Value="running">
+                                                                <Setter Property="Background" Value="#0d3d2a"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Status}" Value="finished">
+                                                                <Setter Property="Background" Value="#3d0d0d"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <TextBlock FontSize="11" FontWeight="Bold">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Foreground" Value="#8b8b9e"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Status}" Value="not_started">
+                                                                    <Setter Property="Foreground" Value="#f39c12"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Status}" Value="running">
+                                                                    <Setter Property="Foreground" Value="#06d6a0"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Status}" Value="finished">
+                                                                    <Setter Property="Foreground" Value="#ef233c"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                    <TextBlock.Text>
+                                                        <MultiBinding StringFormat="{}{0} · 第{1}节">
+                                                            <Binding Path="StatusLabel"/>
+                                                            <Binding Path="CurrentPeriod"/>
+                                                        </MultiBinding>
+                                                    </TextBlock.Text>
+                                                </TextBlock>
+                                            </Border>
+
+                                            <!-- Teams & Score -->
+                                            <Grid Margin="0,0,0,8">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                                                    <Border Background="#4361ee" Width="40" Height="40"
+                                                            CornerRadius="10" HorizontalAlignment="Center" Margin="0,0,0,4">
+                                                        <TextBlock Text="{Binding HomeTeam.ShortName}" Foreground="White"
+                                                                   FontSize="10" FontWeight="Bold"
+                                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                    <TextBlock Text="{Binding HomeTeam.Name}" Foreground="White"
+                                                               FontSize="13" FontWeight="SemiBold"
+                                                               TextTrimming="CharacterEllipsis" MaxWidth="120"
+                                                               TextAlignment="Center"/>
+                                                </StackPanel>
+
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal"
+                                                            HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                            Margin="12,0">
+                                                    <TextBlock Text="{Binding HomeScore}"
+                                                               Foreground="#4cc9f0" FontSize="28" FontWeight="Bold"
+                                                               FontFamily="Consolas"/>
+                                                    <TextBlock Text=" : " Foreground="#5a5a6e"
+                                                               FontSize="20" FontWeight="Bold" FontFamily="Consolas"
+                                                               VerticalAlignment="Center" Margin="4,0"/>
+                                                    <TextBlock Text="{Binding AwayScore}"
+                                                               Foreground="#ef233c" FontSize="28" FontWeight="Bold"
+                                                               FontFamily="Consolas"/>
+                                                </StackPanel>
+
+                                                <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                                                    <Border Background="#ef233c" Width="40" Height="40"
+                                                            CornerRadius="10" HorizontalAlignment="Center" Margin="0,0,0,4">
+                                                        <TextBlock Text="{Binding AwayTeam.ShortName}" Foreground="White"
+                                                                   FontSize="10" FontWeight="Bold"
+                                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                    <TextBlock Text="{Binding AwayTeam.Name}" Foreground="White"
+                                                               FontSize="13" FontWeight="SemiBold"
+                                                               TextTrimming="CharacterEllipsis" MaxWidth="120"
+                                                               TextAlignment="Center"/>
+                                                </StackPanel>
+                                            </Grid>
+
+                                            <!-- Sport Type & Period -->
+                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                                <Border Background="#252538" CornerRadius="6"
+                                                        Padding="6,2" Margin="0,0,6,0">
+                                                    <TextBlock Text="{Binding SportEmoji}" FontSize="10"/>
+                                                </Border>
+                                                <TextBlock Text="{Binding SportType}" Foreground="#5a5a6e"
+                                                           FontSize="11"/>
+                                            </StackPanel>
+                                        </StackPanel>
+
+                                        <!-- Action Buttons -->
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal"
+                                                    VerticalAlignment="Center" Margin="16,0,0,0">
+                                            <Button Content="✏ 编辑" Command="{Binding DataContext.EditMatchCommand,
+                                                              RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Background="#252538" Foreground="#8b8b9e"
+                                                    Padding="10,6" FontSize="11" BorderThickness="0"
+                                                    Cursor="Hand" Margin="0,0,6,0">
+                                                <Button.Template>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border x:Name="bd" Background="{TemplateBinding Background}"
+                                                                CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                                            <ContentPresenter HorizontalAlignment="Center"
+                                                                              VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter TargetName="bd" Property="Background"
+                                                                        Value="#2a2a3e"/>
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Button.Template>
+                                            </Button>
+                                            <Button Content="🗑 删除" Command="{Binding DataContext.DeleteMatchCommand,
+                                                              RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Background="#3d0d0d" Foreground="#ef233c"
+                                                    Padding="10,6" FontSize="11" BorderThickness="0"
+                                                    Cursor="Hand">
+                                                <Button.Template>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border x:Name="bd" Background="{TemplateBinding Background}"
+                                                                CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                                            <ContentPresenter HorizontalAlignment="Center"
+                                                                              VerticalAlignment="Center"/>
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter TargetName="bd" Property="Opacity" Value="0.8"/>
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Button.Template>
+                                            </Button>
+                                        </StackPanel>
+
+                                        <!-- Quick Action -->
+                                        <StackPanel Grid.Column="2" Orientation="Horizontal"
+                                                    VerticalAlignment="Center" Margin="12,0,0,0">
+                                            <Button Content="▶ 开始" Command="{Binding DataContext.StartMatchCommand,
+                                                              RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Background="#06d6a0" Foreground="White"
+                                                    Padding="12,8" FontSize="12" FontWeight="SemiBold"
+                                                    BorderThickness="0" Cursor="Hand"
+                                                    Visibility="{Binding CanStart, Converter={StaticResource BoolToVisConverter}}"/>
+                                            <Button Content="⏹ 结束" Command="{Binding DataContext.EndMatchCommand,
+                                                              RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Background="#ef233c" Foreground="White"
+                                                    Padding="12,8" FontSize="12" FontWeight="SemiBold"
+                                                    BorderThickness="0" Cursor="Hand" Margin="6,0,0,0"
+                                                    Visibility="{Binding CanEnd, Converter={StaticResource BoolToVisConverter}}"/>
+                                            <Button Content="进入裁判 →" Command="{Binding DataContext.EnterMatchFromManagementCommand,
+                                                              RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Background="#4361ee" Foreground="White"
+                                                    Padding="12,8" FontSize="12" FontWeight="SemiBold"
+                                                    BorderThickness="0" Cursor="Hand" Margin="6,0,0,0"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+
+        <!-- Loading Overlay -->
+        <Border Grid.RowSpan="2" Background="#80000000"
+                Visibility="{Binding IsManagementLoading, Converter={StaticResource BoolToVisConverter}}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock Text="⏳" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                <TextBlock Text="加载中..." Foreground="White" FontSize="16" HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Create Match Dialog -->
+        <Border Grid.RowSpan="2" Background="#cc000000"
+                Visibility="{Binding IsCreateMatchDialogOpen, Converter={StaticResource BoolToVisConverter}}">
+            <Border Background="#1a1a28" CornerRadius="20" Width="480"
+                    VerticalAlignment="Center" HorizontalAlignment="Center"
+                    Padding="32">
+                <Border.Effect>
+                    <DropShadowEffect ShadowDepth="4" BlurRadius="30" Color="#000000" Opacity="0.5"/>
+                </Border.Effect>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Title -->
+                    <TextBlock Grid.Row="0" Text="🏆 创建新比赛" Foreground="White"
+                               FontSize="20" FontWeight="Bold" Margin="0,0,0,24"/>
+
+                    <!-- Sport Type -->
+                    <StackPanel Grid.Row="1" Margin="0,0,0,16">
+                        <TextBlock Text="运动类型 *" Foreground="#8b8b9e" FontSize="12" Margin="0,0,0,8"/>
+                        <ItemsControl ItemsSource="{Binding SportTypes}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="#0a0a0f" CornerRadius="8"
+                                            Padding="10,8" BorderThickness="1" BorderBrush="#2a2a3e"
+                                            Cursor="Hand" Margin="0,0,8,8"
+                                            MouseLeftButtonDown="MatchSportTypeItem_Click">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Emoji}" FontSize="16" Margin="0,0,6,0"/>
+                                            <TextBlock Text="{Binding DisplayText}" Foreground="#8b8b9e" FontSize="13"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <!-- Team Selection -->
+                    <StackPanel Grid.Row="2" Margin="0,0,0,24">
+                        <TextBlock Text="参赛队伍 *" Foreground="#8b8b9e" FontSize="12" Margin="0,0,0,8"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <!-- Home Team -->
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="主队" Foreground="#4cc9f0" FontSize="11" Margin="0,0,0,4"/>
+                                <ComboBox ItemsSource="{Binding AvailableTeamsForMatch}"
+                                          SelectedItem="{Binding SelectedHomeTeam}"
+                                          DisplayMemberPath="Name"
+                                          Background="#0a0a0f" Foreground="White"
+                                          BorderBrush="#2a2a3e"/>
+                            </StackPanel>
+                            <TextBlock Grid.Column="1" Text=" VS " Foreground="#5a5a6e"
+                                       FontSize="16" FontWeight="Bold" VerticalAlignment="Bottom" Margin="12,0,12,10"/>
+                            <!-- Away Team -->
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="客队" Foreground="#ef233c" FontSize="11" Margin="0,0,0,4"/>
+                                <ComboBox ItemsSource="{Binding AvailableTeamsForMatch}"
+                                          SelectedItem="{Binding SelectedAwayTeam}"
+                                          DisplayMemberPath="Name"
+                                          Background="#0a0a0f" Foreground="White"
+                                          BorderBrush="#2a2a3e"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Buttons -->
+                    <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="取消" Command="{Binding CloseCreateMatchDialogCommand}"
+                                Background="#252538" Foreground="#8b8b9e"
+                                Padding="20,10" FontSize="13" BorderThickness="0" Cursor="Hand"
+                                Margin="0,0,12,0">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="bd" Background="{TemplateBinding Background}"
+                                            CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="bd" Property="Background" Value="#2a2a3e"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                        <Button Content="创建比赛" Command="{Binding ConfirmCreateMatchCommand}"
+                                Background="#4361ee" Foreground="White"
+                                Padding="20,10" FontSize="13" FontWeight="SemiBold" BorderThickness="0" Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="bd" Background="{TemplateBinding Background}"
+                                            CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="bd" Property="Background" Value="#3a56d4"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Border>
+
+        <!-- Create Event Dialog -->
+        <Border Grid.RowSpan="2" Background="#cc000000"
+                Visibility="{Binding IsCreateEventDialogOpen, Converter={StaticResource BoolToVisConverter}}">
+            <Border Background="#1a1a28" CornerRadius="20" Width="480"
+                    VerticalAlignment="Center" HorizontalAlignment="Center"
+                    Padding="32">
+                <Border.Effect>
+                    <DropShadowEffect ShadowDepth="4" BlurRadius="30" Color="#000000" Opacity="0.5"/>
+                </Border.Effect>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Title -->
+                    <TextBlock Grid.Row="0" Text="🏆 创建新赛事" Foreground="White"
+                               FontSize="20" FontWeight="Bold" Margin="0,0,0,24"/>
+
+                    <!-- Event Name -->
+                    <StackPanel Grid.Row="1" Margin="0,0,0,20">
+                        <TextBlock Text="赛事名称 *" Foreground="#8b8b9e" FontSize="12" Margin="0,0,0,8"/>
+                        <TextBox Text="{Binding NewEventName, UpdateSourceTrigger=PropertyChanged}"
+                                 Background="#0a0a0f" Foreground="White" CaretBrush="White"
+                                 BorderBrush="#2a2a3e" BorderThickness="1"
+                                 Padding="12,10" FontSize="14"
+                                 VerticalContentAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Sport Type -->
+                    <StackPanel Grid.Row="2" Margin="0,0,0,24">
+                        <TextBlock Text="运动类型 *" Foreground="#8b8b9e" FontSize="12" Margin="0,0,0,8"/>
+                        <ItemsControl ItemsSource="{Binding SportTypes}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="#0a0a0f" CornerRadius="8"
+                                            Padding="10,8" BorderThickness="1" BorderBrush="#2a2a3e"
+                                            Cursor="Hand" Margin="0,0,8,8"
+                                            MouseLeftButtonDown="SportTypeItem_Click">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Emoji}" FontSize="16" Margin="0,0,6,0"/>
+                                            <TextBlock Text="{Binding DisplayText}" Foreground="#8b8b9e" FontSize="13"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <!-- Buttons -->
+                    <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="取消" Command="{Binding CloseCreateEventDialogCommand}"
+                                Background="#252538" Foreground="#8b8b9e"
+                                Padding="20,10" FontSize="13" BorderThickness="0" Cursor="Hand"
+                                Margin="0,0,12,0">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="bd" Background="{TemplateBinding Background}"
+                                            CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="bd" Property="Background" Value="#2a2a3e"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                        <Button Content="创建赛事" Command="{Binding ConfirmCreateEventCommand}"
+                                Background="#7209b7" Foreground="White"
+                                Padding="20,10" FontSize="13" FontWeight="SemiBold" BorderThickness="0" Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="bd" Background="{TemplateBinding Background}"
+                                            CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="bd" Property="Background" Value="#5a08a0"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Border>
+    </Grid>
+</UserControl>

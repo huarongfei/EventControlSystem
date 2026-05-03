@@ -1,0 +1,114 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model broadcast_scenes {
+  id            String   @id @default(uuid())
+  matchId       String   @unique
+  name          String?
+  layout        String?
+  primaryCamera String?
+  overlay       String?
+  transition    String?
+  createdAt     DateTime @default(now())
+  matches       matches  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+}
+
+model events {
+  id         String    @id @default(uuid())
+  name       String
+  sportType  String    @default("basketball")
+  category   String    @default("team")
+  startTime  DateTime?
+  status     String    @default("pending")
+  scoreRules String?
+  createdAt  DateTime  @default(now())
+  matches    matches[]
+}
+
+model match_events {
+  id         String   @id @default(uuid())
+  matchId    String
+  type       String
+  period     Int?
+  timestamp  DateTime @default(now())
+  teamId     String?
+  playerId   String?
+  detail     String?
+  reportedBy String?
+  synced     Boolean  @default(false)
+  matches    matches  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+}
+
+model match_participants {
+  id          String   @id @default(uuid())
+  matchId     String
+  laneNumber  Int
+  athleteName String
+  teamName    String?
+  splitTimes  String?
+  finalTime   String?
+  rank        Int?
+  status      String   @default("pending")
+  createdAt   DateTime @default(now())
+  matches     matches  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+}
+
+model matches {
+  id                              String               @id @default(uuid())
+  eventId                         String
+  category                        String               @default("team")
+  sportType                       String               @default("basketball")
+  status                          String               @default("not_started")
+  currentPeriod                   Int                  @default(1)
+  periodDuration                  Int                  @default(10)
+  periodGoal                      Int                  @default(0)
+  matchTime                       String               @default("10:00")
+  homeScore                       Int                  @default(0)
+  awayScore                       Int                  @default(0)
+  startedAt                       DateTime?
+  endedAt                         DateTime?
+  createdAt                       DateTime             @default(now())
+  homeTeamId                      String
+  awayTeamId                      String
+  broadcast_scenes                broadcast_scenes?
+  match_events                    match_events[]
+  match_participants              match_participants[]
+  teams_matches_awayTeamIdToteams teams                @relation("matches_awayTeamIdToteams", fields: [awayTeamId], references: [id])
+  teams_matches_homeTeamIdToteams teams                @relation("matches_homeTeamIdToteams", fields: [homeTeamId], references: [id])
+  events                          events               @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
+
+model players {
+  id        String   @id @default(uuid())
+  teamId    String
+  name      String
+  number    Int?
+  position  String?
+  createdAt DateTime @default(now())
+  teams     teams    @relation(fields: [teamId], references: [id], onDelete: Cascade)
+}
+
+model teams {
+  id                                String    @id @default(uuid())
+  name                              String
+  shortName                         String?
+  logoUrl                           String?
+  createdAt                         DateTime  @default(now())
+  matches_matches_awayTeamIdToteams matches[] @relation("matches_awayTeamIdToteams")
+  matches_matches_homeTeamIdToteams matches[] @relation("matches_homeTeamIdToteams")
+  players                           players[]
+}
+
+model users {
+  id           String   @id @default(uuid())
+  username     String   @unique
+  passwordHash String
+  role         String   @default("viewer")
+  createdAt    DateTime @default(now())
+}

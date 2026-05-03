@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary colors -->
+    <color name="primary">#FF6750A4</color>
+    <color name="on_primary">#FFFFFFFF</color>
+    <color name="primary_container">#FFEADDFF</color>
+    <color name="on_primary_container">#FF21005D</color>
+
+    <!-- Secondary colors -->
+    <color name="secondary">#FF625B71</color>
+    <color name="on_secondary">#FFFFFFFF</color>
+    <color name="secondary_container">#FFE8DEF8</color>
+    <color name="on_secondary_container">#FF1D192B</color>
+
+    <!-- Tertiary colors -->
+    <color name="tertiary">#FF7D5260</color>
+    <color name="on_tertiary">#FFFFFFFF</color>
+    <color name="tertiary_container">#FFFFD8E4</color>
+    <color name="on_tertiary_container">#FF31111D</color>
+
+    <!-- Background colors -->
+    <color name="background">#FFFFFBFE</color>
+    <color name="on_background">#FF1C1B1F</color>
+    <color name="surface">#FFFFFBFE</color>
+    <color name="on_surface">#FF1C1B1F</color>
+    <color name="surface_variant">#FFE7E0EC</color>
+    <color name="on_surface_variant">#FF49454F</color>
+
+    <!-- Status colors -->
+    <color name="online_green">#FF4CAF50</color>
+    <color name="offline_red">#FFF44336</color>
+    <color name="offline_warning">#FFFF9800</color>
+
+    <!-- Error colors -->
+    <color name="error">#FFB3261E</color>
+    <color name="on_error">#FFFFFFFF</color>
+    <color name="error_container">#FFF9DEDC</color>
+    <color name="on_error_container">#FF410E0B</color>
+
+    <!-- Outline -->
+    <color name="outline">#FF79747E</color>
+    <color name="outline_variant">#FFCAC4D0</color>
+</resources>

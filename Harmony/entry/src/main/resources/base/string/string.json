@@ -1,0 +1,16 @@
+{
+  "string": [
+    {
+      "name": "app_name",
+      "value": "EventControl 裁判端"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "裁判端主入口"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "裁判端"
+    }
+  ]
+}

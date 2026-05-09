@@ -3,6 +3,12 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "author": "Huafeirong (https://github.com/huarongfei)",
+  "homepage": "https://github.com/huarongfei/EventControlSystem",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/huarongfei/EventControlSystem.git"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

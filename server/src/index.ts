@@ -1,3 +1,11 @@
+/**
+ * EventControlSystem - Web Backend Server
+ * 
+ * Author: Huafeirong (https://github.com/huarongfei)
+ * Project: https://github.com/huarongfei/EventControlSystem
+ * Copyright © 2026 Huafeirong. All rights reserved.
+ */
+
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';

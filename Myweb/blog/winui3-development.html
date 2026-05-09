@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="WinUI 3 开发实战教程">
+    <title>WinUI 3 开发实战 - Huafeirong</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../blog.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1705177262016674"
+     crossorigin="anonymous"></script>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="../index.html" class="nav-logo">
+                <span>Huafeirong</span>
+            </a>
+            <div class="nav-links">
+                <a href="../index.html" class="nav-link">首页</a>
+                <a href="../blog.html" class="nav-link">博客</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Blog Article -->
+    <article class="blog-article">
+        <div class="container">
+            <!-- Article Header -->
+            <header class="article-header">
+                <div class="article-meta">
+                    <span class="article-tag">Windows开发</span>
+                    <time class="article-date">2026-03-15</time>
+                </div>
+                <h1 class="article-title">WinUI 3 开发实战：从零开始构建现代Windows应用</h1>
+                <div class="article-author">
+                    <span class="author-name">By Huafeirong</span>
+                    <span class="article-reading-time">阅读时间：约 10 分钟</span>
+                </div>
+            </header>
+
+            <!-- Article Content -->
+            <div class="article-content">
+                <p>WinUI 3 是微软推出的最新一代原生 UI 框架，它提供了流畅的动画、现代化的控件和出色的性能表现。在这篇文章中，我将带你从零开始，一步步构建一个 WinUI 3 应用程序。</p>
+
+                <h2>什么是 WinUI 3？</h2>
+                <p>WinUI 3 (Windows App SDK) 是一个用于构建现代 Windows 应用的原生 UI 框架。它提供了：</p>
+                <ul>
+                    <li><strong>现代化控件</strong>：包括 NavigationView、TreeView、DataGrid 等丰富的控件库</li>
+                    <li><strong>流畅的动画</strong>：内置动画库，支持复杂的动画效果</li>
+                    <li><strong>Material Design 风格</strong>：现代化的设计语言</li>
+                    <li><strong>Fluent Design</strong>：微软的 Fluent Design 系统支持</li>
+                    <li><strong>独立更新</strong>：可以独立于 Windows 系统进行更新</li>
+                </ul>
+
+                <h2>环境准备</h2>
+                <p>开始开发之前，你需要准备以下工具：</p>
+                <ol>
+                    <li><strong>Visual Studio 2022</strong>：推荐使用 Community 或更高版本</li>
+                    <li><strong>Windows App SDK</strong>：最新版本的 Windows App SDK</li>
+                    <li><strong>.NET 6 或更高版本</strong>：C# 开发环境</li>
+                </ol>
+
+                <h2>创建项目</h2>
+                <p>打开 Visual Studio，选择"创建新项目"，然后：</p>
+                <ol>
+                    <li>搜索"WinUI 3"模板</li>
+                    <li>选择"Packaged App (WinUI 3 in Desktop)"</li>
+                    <li>填写项目名称和位置</li>
+                    <li>选择目标框架（推荐 .NET 8）</li>
+                    <li>点击创建</li>
+                </ol>
+
+                <h2>项目结构解析</h2>
+                <p>创建完成后，你会看到以下关键文件：</p>
+                <ul>
+                    <li><code>App.xaml</code>：应用程序入口文件</li>
+                    <li><code>MainWindow.xaml</code>：主窗口文件</li>
+                    <li><code>Package.appxmanifest</code>：应用清单文件</li>
+                    <li><code>Assets</code>：应用资源文件夹</li>
+                </ul>
+
+                <h2>构建第一个界面</h2>
+                <p>让我们创建一个简单的界面，包含一个按钮和一个文本框：</p>
+                <pre><code>&lt;Grid&gt;
+    &lt;StackPanel Spacing="20" Padding="40"&gt;
+        &lt;TextBlock Text="欢迎使用 WinUI 3!" 
+                   Style="{StaticResource HeaderTextBlockStyle}" 
+                   HorizontalAlignment="Center"/&gt;
+        &lt;TextBox PlaceholderText="输入内容..." 
+                 x:Name="InputTextBox"
+                 Width="300"/&gt;
+        &lt;Button Content="点击我" 
+                x:Name="ClickButton"
+                Width="200"
+                Click="OnButtonClick"/&gt;
+        &lt;TextBlock Text="等待操作..." 
+                   x:Name="ResultTextBlock"
+                   HorizontalAlignment="Center"/&gt;
+    &lt;/StackPanel&gt;
+&lt;/Grid&gt;</code></pre>
+
+                <h2>添加交互逻辑</h2>
+                <p>在 MainWindow.xaml.cs 中添加按钮点击事件处理：</p>
+                <pre><code>private void OnButtonClick(object sender, RoutedEventArgs e)
+{
+    var input = InputTextBox.Text;
+    ResultTextBlock.Text = $"你输入了：{input}";
+}</code></pre>
+
+                <h2>应用样式和主题</h2>
+                <p>WinUI 3 支持深色和浅色主题。在 App.xaml 中设置默认主题：</p>
+                <pre><code>&lt;Application.Resources&gt;
+    &lt;ResourceDictionary&gt;
+        &lt;ResourceDictionary.MergedDictionaries&gt;
+            &lt;XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" /&gt;
+        &lt;/ResourceDictionary.MergedDictionaries&gt;
+    &lt;/ResourceDictionary&gt;
+&lt;/Application.Resources&gt;</code></pre>
+
+                <h2>打包和发布</h2>
+                <p>完成开发后，你需要打包应用：</p>
+                <ol>
+                    <li>右键项目，选择"发布"→"创建应用包"</li>
+                    <li>选择"旁加载"或"Microsoft Store"</li>
+                    <li>填写应用信息</li>
+                    <li>生成包文件</li>
+                </ol>
+
+                <h2>总结</h2>
+                <p>WinUI 3 是一个强大的 UI 框架，非常适合开发现代化的 Windows 应用程序。通过本文的学习，你已经掌握了从环境搭建到应用发布的基本流程。接下来，建议你：</p>
+                <ul>
+                    <li>深入学习 WinUI 3 控件和布局系统</li>
+                    <li>探索数据绑定和 MVVM 模式</li>
+                    <li>学习动画和视觉效果</li>
+                    <li>实践更多的项目案例</li>
+                </ul>
+
+                <p>希望这篇文章对你有所帮助！如果你在开发过程中遇到问题，欢迎在评论区留言交流。</p>
+            </div>
+
+            <!-- Article Footer -->
+            <footer class="article-footer">
+                <div class="article-tags">
+                    <span class="tag-label">标签：</span>
+                    <a href="#" class="article-tag-link">WinUI 3</a>
+                    <a href="#" class="article-tag-link">Windows开发</a>
+                    <a href="#" class="article-tag-link">C#</a>
+                    <a href="#" class="article-tag-link">教程</a>
+                </div>
+            </footer>
+        </div>
+    </article>
+
+    <!-- Related Articles -->
+    <section class="related-articles">
+        <div class="container">
+            <h3>相关文章</h3>
+            <div class="related-articles-grid">
+                <a href="../blog.html" class="related-article-card">
+                    <span class="related-tag">性能优化</span>
+                    <h4>C# 应用性能优化指南</h4>
+                    <p>深入了解 C# 应用性能优化的核心技巧...</p>
+                </a>
+                <a href="../blog.html" class="related-article-card">
+                    <span class="related-tag">工具开发</span>
+                    <h4>从想法到上线：随机点名应用开发历程</h4>
+                    <p>回顾"随机点名"应用从最初的想法到 Microsoft Store 上线...</p>
+                </a>
+                <a href="../blog.html" class="related-article-card">
+                    <span class="related-tag">网络编程</span>
+                    <h4>Network Utility Kit 开发实录</h4>
+                    <p>深入了解 Network Utility Kit 的架构设计...</p>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Huafeirong. 保留所有权利。</p>
+            <p class="beian"><a href="https://beian.miit.gov.cn/" target="_blank" rel="nofollow">渝ICP备2026006318号-1</a></p>
+        </div>
+    </footer>
+</body>
+</html>

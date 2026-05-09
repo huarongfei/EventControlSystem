@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="C# 应用性能优化指南">
+    <title>C# 应用性能优化指南 - Huafeirong</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../blog.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1705177262016674"
+     crossorigin="anonymous"></script>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="../index.html" class="nav-logo">
+                <span>Huafeirong</span>
+            </a>
+            <div class="nav-links">
+                <a href="../index.html" class="nav-link">首页</a>
+                <a href="../blog.html" class="nav-link">博客</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Blog Article -->
+    <article class="blog-article">
+        <div class="container">
+            <!-- Article Header -->
+            <header class="article-header">
+                <div class="article-meta">
+                    <span class="article-tag">性能优化</span>
+                    <time class="article-date">2026-03-10</time>
+                </div>
+                <h1 class="article-title">C# 应用性能优化指南：10个实用技巧</h1>
+                <div class="article-author">
+                    <span class="author-name">By Huafeirong</span>
+                    <span class="article-reading-time">阅读时间：约 12 分钟</span>
+                </div>
+            </header>
+
+            <!-- Article Content -->
+            <div class="article-content">
+                <p>性能优化是开发高质量应用程序的关键环节。本文将分享10个实用的 C# 性能优化技巧，帮助你构建更快、更高效的应用程序。这些技巧涵盖了内存管理、算法选择、异步编程等多个方面。</p>
+
+                <h2>1. 使用 StringBuilder 进行字符串拼接</h2>
+                <p>在循环中进行大量字符串拼接时，使用 <code>StringBuilder</code> 而不是字符串连接符（+）可以显著提高性能。</p>
+                <pre><code>// 低效的方式
+string result = "";
+for (int i = 0; i < 1000; i++)
+{
+    result += i.ToString();
+}
+
+// 高效的方式
+StringBuilder sb = new StringBuilder();
+for (int i = 0; i < 1000; i++)
+{
+    sb.Append(i.ToString());
+}
+string result = sb.ToString();</code></pre>
+
+                <h2>2. 合理使用缓存</h2>
+                <p>对于频繁访问但计算成本高的数据，使用缓存可以避免重复计算。C# 提供了多种缓存方案，包括 <code>MemoryCache</code>、<code>Lazy&lt;T&gt;</code> 等。</p>
+                <pre><code>private static readonly MemoryCache _cache = new MemoryCache(new MemoryCacheOptions());
+
+public static T GetOrAdd&lt;T&gt;(string key, Func&lt;T&gt; factory)
+{
+    if (_cache.TryGetValue(key, out T cached))
+    {
+        return cached;
+    }
+    
+    var value = factory();
+    _cache.Set(key, value, TimeSpan.FromMinutes(30));
+    return value;
+}</code></pre>
+
+                <h2>3. 避免装箱和拆箱</h2>
+                <p>值类型和引用类型之间的转换（装箱/拆箱）会产生额外的内存分配和性能开销。尽量使用泛型集合来避免装箱。</p>
+                <pre><code>// 避免装箱
+List&lt;int&gt; numbers = new List&lt;int&gt;();  // 推荐
+ArrayList numbers2 = new ArrayList();    // 避免</code></pre>
+
+                <h2>4. 使用对象池减少内存分配</h2>
+                <p>对于频繁创建和销毁的对象，使用对象池可以减少 GC 压力。.NET 提供了 <code>ObjectPool&lt;T&gt;</code> 来实现对象池。</p>
+                <pre><code>var pool = new DefaultObjectPool&lt;StringBuilder&gt;(
+    new StringBuilderPooledObjectPolicy());
+
+var sb = pool.Get();
+try
+{
+    sb.Append("Hello");
+    // 使用对象
+}
+finally
+{
+    pool.Return(sb);
+}</code></pre>
+
+                <h2>5. 合理使用 async/await</h2>
+                <p>异步编程可以提高应用程序的响应性，但需要注意避免不必要的异步操作。对于同步操作，不要使用 async。</p>
+                <pre><code>// 不必要的异步
+public async Task&lt;int&gt; Calculate()
+{
+    return 1 + 2;  // 这里不需要 async
+}
+
+// 正确的做法
+public int Calculate()
+{
+    return 1 + 2;
+}</code></pre>
+
+                <h2>6. 优化集合选择</h2>
+                <p>根据使用场景选择合适的集合类型。不同的集合有不同的时间复杂度特性。</p>
+                <ul>
+                    <li><code>List&lt;T&gt;</code> - 适合频繁随机访问</li>
+                    <li><code>Dictionary&lt;K,V&gt;</code> - 适合快速查找</li>
+                    <li><code>HashSet&lt;T&gt;</code> - 适合去重</li>
+                    <li><code>LinkedList&lt;T&gt;</code> - 适合频繁插入删除</li>
+                </ul>
+
+                <h2>7. 使用并行处理</h2>
+                <p>对于 CPU 密集型任务，使用并行处理可以充分利用多核 CPU。<code>Parallel.For</code> 和 <code>Parallel.ForEach</code> 是很好的选择。</p>
+                <pre><code>Parallel.For(0, 1000, i =&gt;
+{
+    ProcessItem(i);
+});</code></pre>
+
+                <h2>8. 优化 LINQ 查询</h2>
+                <p>LINQ 提供了优雅的语法，但需要注意性能。避免在循环中重复执行相同的查询，考虑使用 <code>ToList()</code> 或 <code>ToArray()</code> 缓存结果。</p>
+                <pre><code>// 不高效
+foreach (var item in items.Where(x =&gt; x.IsActive))
+{
+    Process(item);
+}
+
+// 更高效
+var activeItems = items.Where(x =&gt; x.IsActive).ToList();
+foreach (var item in activeItems)
+{
+    Process(item);
+}</code></pre>
+
+                <h2>9. 使用 Span&lt;T&gt; 和 Memory&lt;T&gt;</h2>
+                <p>对于高性能场景，使用 <code>Span&lt;T&gt;</code> 和 <code>Memory&lt;T&gt;</code> 可以避免不必要的内存分配。</p>
+                <pre><code>Span&lt;byte&gt; buffer = stackalloc byte[256];
+// 使用 buffer 而不需要额外的分配</code></pre>
+
+                <h2>10. 监控和分析</h2>
+                <p>性能优化的前提是了解当前的性能瓶颈。使用性能分析工具（如 dotTrace、Visual Studio Profiler）来识别热点。</p>
+                <ul>
+                    <li>使用 <code>Stopwatch</code> 测量关键代码段</li>
+                    <li>使用 <code>GC.Collect</code> 和 <code>GC.GetTotalMemory</code> 监控内存</li>
+                    <li>使用 <code>DiagnosticSource</code> 和 <code>EventCounter</code> 收集指标</li>
+                </ul>
+
+                <h2>总结</h2>
+                <p>性能优化是一个持续的过程，需要在代码质量和执行效率之间找到平衡。以上10个技巧可以帮助你在日常开发中写出更高效的代码。记住：</p>
+                <ul>
+                    <li>先测量，再优化</li>
+                    <li>关注热点代码</li>
+                    <li>避免过早优化</li>
+                    <li>保持代码可读性</li>
+                </ul>
+
+                <p>希望这些技巧对你的开发工作有所帮助！如果你有更多性能优化的经验，欢迎在评论区分享。</p>
+            </div>
+
+            <!-- Article Footer -->
+            <footer class="article-footer">
+                <div class="article-tags">
+                    <span class="tag-label">标签：</span>
+                    <a href="#" class="article-tag-link">C#</a>
+                    <a href="#" class="article-tag-link">性能优化</a>
+                    <a href="#" class="article-tag-link">最佳实践</a>
+                    <a href="#" class="article-tag-link">.NET</a>
+                </div>
+            </footer>
+        </div>
+    </article>
+
+    <!-- Related Articles -->
+    <section class="related-articles">
+        <div class="container">
+            <h3>相关文章</h3>
+            <div class="related-articles-grid">
+                <a href="winui3-development.html" class="related-article-card">
+                    <span class="related-tag">Windows开发</span>
+                    <h4>WinUI 3 开发实战：从零开始构建现代Windows应用</h4>
+                    <p>探索 WinUI 3 的强大功能，学习如何创建具有流畅动画...</p>
+                </a>
+                <a href="network-utility-kit.html" class="related-article-card">
+                    <span class="related-tag">网络编程</span>
+                    <h4>Network Utility Kit 开发实录</h4>
+                    <p>深入了解 Network Utility Kit 的架构设计...</p>
+                </a>
+                <a href="indie-developer-tips.html" class="related-article-card">
+                    <span class="related-tag">经验分享</span>
+                    <h4>独立开发者的日常：时间管理与效率提升</h4>
+                    <p>如何在有限的时间内完成更多工作？分享我的时间管理方法...</p>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Huafeirong. 保留所有权利。</p>
+            <p class="beian"><a href="https://beian.miit.gov.cn/" target="_blank" rel="nofollow">渝ICP备2026006318号-1</a></p>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="页面未找到 - 404错误">
+    <title>页面未找到 - 404 - Huafeirong</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="blog.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1705177262016674"
+     crossorigin="anonymous"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="nav-logo">
+                <span>Huafeirong</span>
+            </a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">首页</a>
+                <a href="blog.html" class="nav-link">博客</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 404 Content -->
+    <section class="hero">
+        <div class="container">
+            <div class="error-content">
+                <div class="error-number">
+                    <span>4</span>
+                    <div class="error-icon">
+                        <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="40" cy="40" r="36" fill="#FF6B6B"/>
+                            <path d="M32 28L48 52" stroke="white" stroke-width="4" stroke-linecap="round"/>
+                            <path d="M48 28L32 52" stroke="white" stroke-width="4" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <span>4</span>
+                </div>
+                
+                <h1>哎呀！页面找不到了</h1>
+                <p class="error-description">您访问的页面可能已被移动、重命名或暂时不可用。</p>
+                
+                <div class="error-suggestions">
+                    <h3>您可以尝试以下操作：</h3>
+                    <ul>
+                        <li>检查您输入的网址是否正确</li>
+                        <li>返回 <a href="index.html">首页</a></li>
+                        <li>浏览我的 <a href="blog.html">技术博客</a></li>
+                        <li>查看我的 <a href="index.html#projects">作品</a></li>
+                    </ul>
+                </div>
+                
+                <div class="error-actions">
+                    <a href="index.html" class="btn btn-primary">返回首页</a>
+                    <a href="blog.html" class="btn btn-secondary">查看博客</a>
+                </div>
+                
+                <div class="error-search">
+                    <h4>或者，搜索相关内容：</h4>
+                    <form class="search-form">
+                        <input type="text" placeholder="搜索博客文章..." class="search-input">
+                        <button type="submit" class="btn btn-primary">搜索</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Huafeirong. 保留所有权利。</p>
+        </div>
+    </footer>
+
+    <style>
+        .error-content {
+            text-align: center;
+            padding: 4rem 0;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .error-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .error-number span {
+            font-size: 6rem;
+            font-weight: 800;
+            background: var(--gradient-blue);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .error-icon svg {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .error-description {
+            color: var(--text-secondary);
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .error-suggestions {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin: 2rem auto;
+            max-width: 600px;
+            text-align: left;
+            backdrop-filter: blur(10px);
+        }
+
+        .error-suggestions h3 {
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+        }
+
+        .error-suggestions ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .error-suggestions li {
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .error-suggestions li:before {
+            content: "•";
+            color: var(--accent-blue);
+            position: absolute;
+            left: 0;
+        }
+
+        .error-suggestions a {
+            color: var(--accent-blue);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .error-suggestions a:hover {
+            color: var(--accent-purple);
+            text-decoration: underline;
+        }
+
+        .error-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .error-actions .btn {
+            min-width: 160px;
+        }
+
+        .error-search {
+            max-width: 600px;
+            margin: 2rem auto;
+        }
+
+        .error-search h4 {
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 0.5rem;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .search-input {
+            flex: 1;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 0.75rem;
+            padding: 0.875rem 1rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .error-number {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .error-number span {
+                font-size: 4rem;
+            }
+
+            .error-icon svg {
+                width: 60px;
+                height: 60px;
+            }
+
+            .error-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .error-actions .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .search-form {
+                flex-direction: column;
+            }
+
+            .search-form .btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .error-number span {
+                font-size: 3rem;
+            }
+
+            .error-icon svg {
+                width: 50px;
+                height: 50px;
+            }
+
+            .error-suggestions {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</body>
+</html>

@@ -1,0 +1,11 @@
+Contact: mailto:security@huafeirong.com
+Expires: 2027-04-04T00:00:00.000Z
+Acknowledgments: https://huafeirong.com/security-acknowledgments
+Preferred-Languages: en, zh
+Canonical: https://huafeirong.com/.well-known/security.txt
+Policy: https://huafeirong.com/security-policy
+Hiring: https://huafeirong.com/jobs
+
+# Security Policy for Huafeirong's Website
+# This file provides security contact information for researchers
+# Last updated: 2026-04-04

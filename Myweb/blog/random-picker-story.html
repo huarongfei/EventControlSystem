@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="随机点名应用开发历程">
+    <title>从想法到上线：随机点名应用开发历程 - Huafeirong</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../blog.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1705177262016674"
+     crossorigin="anonymous"></script>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="../index.html" class="nav-logo">
+                <span>Huafeirong</span>
+            </a>
+            <div class="nav-links">
+                <a href="../index.html" class="nav-link">首页</a>
+                <a href="../blog.html" class="nav-link">博客</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Blog Article -->
+    <article class="blog-article">
+        <div class="container">
+            <!-- Article Header -->
+            <header class="article-header">
+                <div class="article-meta">
+                    <span class="article-tag">工具开发</span>
+                    <time class="article-date">2026-03-05</time>
+                </div>
+                <h1 class="article-title">从想法到上线：随机点名应用开发历程</h1>
+                <div class="article-author">
+                    <span class="author-name">By Huafeirong</span>
+                    <span class="article-reading-time">阅读时间：约 15 分钟</span>
+                </div>
+            </header>
+
+            <!-- Article Content -->
+            <div class="article-content">
+                <p>今天我想分享"随机点名"应用从最初的想法到成功上架 Microsoft Store 的完整开发历程。这是一个看似简单但包含了很多实际开发挑战的项目。</p>
+
+                <h2>项目起源</h2>
+                <p>最初的想法来自一个朋友的抱怨。作为老师，他每天都需要在课堂上随机点名，但市面上可用的工具要么广告太多，要么功能臃肿。他问我能不能做一个简单、干净的点名工具。</p>
+                <p>这个需求看似简单，但让我思考了很多。一个真正好用的点名工具应该具备什么特点？</p>
+                <ul>
+                    <li><strong>简单易用</strong>：打开就能用，不需要复杂配置</li>
+                    <li><strong>快速响应</strong>：点击立即获得结果，无延迟</li>
+                    <li><strong>公平随机</strong>：真正的随机算法，无偏颇</li>
+                    <li><strong>无广告干扰</strong>：专注核心功能</li>
+                </ul>
+
+                <h2>技术选型</h2>
+                <p>考虑到目标用户主要使用 Windows 设备，我选择了 WinUI 3 作为开发框架。选择它的原因：</p>
+                <ul>
+                    <li>现代化的 UI 设计语言</li>
+                    <li>优秀的性能表现</li>
+                    <li>与 Windows 生态深度集成</li>
+                    <li>支持打包上架 Microsoft Store</li>
+                </ul>
+
+                <h2>核心功能设计</h2>
+                <p>应用的核心功能是实现公平的随机选择。我使用了 .NET 的 <code>Random</code> 类，并确保每次调用都使用不同的种子值。</p>
+                <pre><code>private readonly Random _random = new Random();
+
+public int GetRandomIndex(int count)
+{
+    return _random.Next(count);
+}</code></pre>
+
+                <p>但仅有随机选择还不够。为了增加应用的趣味性，我添加了动画效果和声音反馈。</p>
+
+                <h2>UI/UX 设计</h2>
+                <p>在 UI 设计上，我遵循了极简主义的原则：</p>
+                <ul>
+                    <li><strong>大按钮</strong>：方便在课堂投影中使用</li>
+                    <li><strong>清晰显示</strong>：结果字体大而醒目</li>
+                    <li><strong>动画效果</strong>：增加仪式感和趣味性</li>
+                    <li><strong>深色模式</strong>：适应不同光照环境</li>
+                </ul>
+
+                <h2>遇到的挑战</h2>
+                <p>开发过程中遇到了几个主要挑战：</p>
+
+                <h3>1. 动画性能</h3>
+                <p>最初的动画实现在低端设备上出现卡顿。通过使用 <code>CompositionAnimation</code> 和 GPU 加速，最终实现了流畅的效果。</p>
+
+                <h3>2. 音效处理</h3>
+                <p>为了增加应用体验，我添加了音效。但需要确保音效不会过于干扰，并且可以静音。</p>
+
+                <h3>3. 多语言支持</h3>
+                <p>考虑到应用可能有国际用户，我实现了多语言支持。虽然目前只有中文，但架构上支持轻松添加其他语言。</p>
+
+                <h2>测试与优化</h2>
+                <p>在发布前，我进行了充分的测试：</p>
+                <ul>
+                    <li>在不同硬件配置的设备上测试性能</li>
+                    <li>测试随机算法的公平性（运行数百万次统计分布）</li>
+                    <li>用户测试（邀请教师朋友试用并反馈）</li>
+                    <li>兼容性测试（Windows 10 和 Windows 11）</li>
+                </ul>
+
+                <h2>上架 Microsoft Store</h2>
+                <p>上架过程比预期顺利。需要注意的几点：</p>
+                <ul>
+                    <li><strong>应用图标</strong>：需要符合 Microsoft 的设计规范</li>
+                    <li><strong>截图</strong>：准备清晰的功能截图</li>
+                    <li><strong>描述</strong>：简洁明了地说明应用功能</li>
+                    <li><strong>隐私政策</strong>：即使不收集数据也需要提供</li>
+                </ul>
+
+                <h2>发布后的反馈</h2>
+                <p>应用上线后收到了用户的积极反馈。一位老师告诉我，这个应用让他的课堂互动更加生动，学生们也觉得很公平。</p>
+                <p>当然也收到了一些改进建议，比如：</p>
+                <ul>
+                    <li>添加历史记录功能</li>
+                    <li>支持分组管理</li>
+                    <li>导出点名结果</li>
+                </ul>
+
+                <h2>后续计划</h2>
+                <p>基于用户反馈，我计划在下一版本中加入以下功能：</p>
+                <ul>
+                    <li>历史记录保存和查看</li>
+                    <li>自定义名单导入（Excel、TXT）</li>
+                    <li>分组点名功能</li>
+                    <li>数据统计功能</li>
+                </ul>
+
+                <h2>总结与感悟</h2>
+                <p>开发"随机点名"应用的过程让我学到了很多：</p>
+                <ul>
+                    <li><strong>简单不等于简陋</strong>：即使是简单的功能，也要做到精益求精</li>
+                    <li><strong>用户反馈很重要</strong>：真正了解用户需求才能做出好产品</li>
+                    <li><strong>持续改进</strong>：好的产品是不断迭代出来的</li>
+                    <li><strong>性能优先</strong>：流畅的用户体验比花哨的功能更重要</li>
+                </ul>
+
+                <p>如果你是一名开发者，我鼓励你从简单的工具开始，尝试解决身边的小问题。有时候，最简单的想法反而最有价值。</p>
+
+                <p>如果你使用过"随机点名"应用，欢迎分享你的使用体验和建议。你的反馈对改进产品非常重要！</p>
+            </div>
+
+            <!-- Article Footer -->
+            <footer class="article-footer">
+                <div class="article-tags">
+                    <span class="tag-label">标签：</span>
+                    <a href="#" class="article-tag-link">随机点名</a>
+                    <a href="#" class="article-tag-link">WinUI 3</a>
+                    <a href="#" class="article-tag-link">产品开发</a>
+                    <a href="#" class="article-tag-link">Microsoft Store</a>
+                </div>
+            </footer>
+        </div>
+    </article>
+
+    <!-- Related Articles -->
+    <section class="related-articles">
+        <div class="container">
+            <h3>相关文章</h3>
+            <div class="related-articles-grid">
+                <a href="winui3-development.html" class="related-article-card">
+                    <span class="related-tag">Windows开发</span>
+                    <h4>WinUI 3 开发实战：从零开始构建现代Windows应用</h4>
+                    <p>探索 WinUI 3 的强大功能，学习如何创建具有流畅动画...</p>
+                </a>
+                <a href="network-utility-kit.html" class="related-article-card">
+                    <span class="related-tag">网络编程</span>
+                    <h4>Network Utility Kit 开发实录</h4>
+                    <p>深入了解 Network Utility Kit 的架构设计...</p>
+                </a>
+                <a href="indie-developer-tips.html" class="related-article-card">
+                    <span class="related-tag">经验分享</span>
+                    <h4>独立开发者的日常：时间管理与效率提升</h4>
+                    <p>如何在有限的时间内完成更多工作？分享我的时间管理方法...</p>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Huafeirong. 保留所有权利。</p>
+            <p class="beian"><a href="https://beian.miit.gov.cn/" target="_blank" rel="nofollow">渝ICP备2026006318号-1</a></p>
+        </div>
+    </footer>
+</body>
+</html>

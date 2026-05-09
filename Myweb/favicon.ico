@@ -1,0 +1,6 @@
+# ICO文件需要通过ImageMagick工具生成
+# 由于无法直接生成.ico二进制文件，这里提供HTML中指向SVG的解决方案
+
+<!-- 实际上，favicon.ico文件需要是二进制格式
+对于Nginx服务器，我们可以在配置中重定向favicon.ico到favicon.svg -->
+

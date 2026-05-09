@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Network Utility Kit 开发实录">
+    <title>Network Utility Kit 开发实录 - Huafeirong</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../blog.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1705177262016674"
+     crossorigin="anonymous"></script>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="../index.html" class="nav-logo">
+                <span>Huafeirong</span>
+            </a>
+            <div class="nav-links">
+                <a href="../index.html" class="nav-link">首页</a>
+                <a href="../blog.html" class="nav-link">博客</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Blog Article -->
+    <article class="blog-article">
+        <div class="container">
+            <!-- Article Header -->
+            <header class="article-header">
+                <div class="article-meta">
+                    <span class="article-tag">网络编程</span>
+                    <time class="article-date">2026-02-28</time>
+                </div>
+                <h1 class="article-title">Network Utility Kit 开发实录：网络工具的打造</h1>
+                <div class="article-author">
+                    <span class="author-name">By Huafeirong</span>
+                    <span class="article-reading-time">阅读时间：约 18 分钟</span>
+                </div>
+            </header>
+
+            <!-- Article Content -->
+            <div class="article-content">
+                <p>Network Utility Kit 是我开发的一款网络工具套件，集成了多种常用的网络诊断和查询功能。本文将深入探讨这个项目的架构设计、技术实现以及开发过程中的思考和决策。</p>
+
+                <h2>项目背景</h2>
+                <p>在日常工作和学习中，我经常需要使用各种网络工具来诊断和调试网络问题。这些工具通常分散在不同的命令行工具或在线服务中，使用起来不够方便。我想打造一个统一、易用的网络工具套件，将这些功能集成到一个应用中。</p>
+
+                <h2>功能规划</h2>
+                <p>经过调研和需求分析，我确定了以下核心功能：</p>
+                <ul>
+                    <li><strong>Ping</strong> - 检测网络连通性</li>
+                    <li><strong>Traceroute</strong> - 追踪网络路径</li>
+                    <li><strong>NSLookup</strong> - DNS 查询</li>
+                    <li><strong>Whois</strong> - 域名信息查询</li>
+                    <li><strong>Port Scanner</strong> - 端口扫描</li>
+                    <li><strong>Speed Test</strong> - 网络速度测试</li>
+                    <li><strong>IP Calculator</strong> - IP 地址计算器</li>
+                </ul>
+
+                <h2>架构设计</h2>
+                <p>采用了分层架构设计：</p>
+
+                <h3>1. 表示层</h3>
+                <p>使用 WinUI 3 构建用户界面，采用 MVVM 模式：</p>
+                <ul>
+                    <li><code>Views</code> - 包含各种工具的视图页面</li>
+                    <li><code>ViewModels</code> - 业务逻辑和状态管理</li>
+                    <li><code>Models</code> - 数据模型</li>
+                </ul>
+
+                <h3>2. 服务层</h3>
+                <p>封装各种网络功能的服务类：</p>
+                <pre><code>public interface INetworkService
+{
+    Task&lt;PingResult&gt; PingAsync(string host, int count = 4);
+    Task&lt;TracerouteResult&gt; TracerouteAsync(string host);
+    Task&lt;DnsQueryResult&gt; NsLookupAsync(string domain);
+    // ... 其他方法
+}</code></pre>
+
+                <h3>3. 核心层</h3>
+                <p>实现各种网络功能的核心逻辑：</p>
+                <ul>
+                    <li><code>PingService</code> - ICMP Ping 实现</li>
+                    <li><code>TracerouteService</code> - 路由追踪实现</li>
+                    <li><code>DnsService</code> - DNS 查询实现</li>
+                    <li><code>PortScannerService</code> - 端口扫描实现</li>
+                </ul>
+
+                <h2>关键技术实现</h2>
+
+                <h3>Ping 功能实现</h3>
+                <p>使用 .NET 的 <code>Ping</code> 类实现：</p>
+                <pre><code>public async Task&lt;PingResult&gt; PingAsync(string host, int count = 4)
+{
+    var ping = new Ping();
+    var replies = new List&lt;PingReply&gt;
+    
+    for (int i = 0; i &lt; count; i++)
+    {
+        try
+        {
+            var reply = await ping.SendPingAsync(host, 5000);
+            replies.Add(reply);
+        }
+        catch (PingException ex)
+        {
+            // 处理异常
+        }
+    }
+    
+    return new PingResult(replies);
+}</code></pre>
+
+                <h3>Traceroute 实现</h3>
+                <p>通过发送 TTL 递增的 ICMP 包实现路由追踪：</p>
+                <pre><code>public async Task&lt;TracerouteResult&gt; TracerouteAsync(string host)
+{
+    var hops = new List&lt;HopInfo&gt;();
+    const int maxHops = 30;
+    
+    for (int ttl = 1; ttl &lt;= maxHops; ttl++)
+    {
+        var ping = new Ping();
+        var options = new PingOptions(ttl, true);
+        
+        try
+        {
+            var reply = await ping.SendPingAsync(host, 5000, new byte[32], options);
+            hops.Add(new HopInfo(ttl, reply.Address, reply.RoundtripTime));
+            
+            if (reply.Status == IPStatus.Success)
+                break;
+        }
+        catch (PingException)
+        {
+            hops.Add(new HopInfo(ttl, null, -1));
+        }
+    }
+    
+    return new TracerouteResult(hops);
+}</code></pre>
+
+                <h3>DNS 查询实现</h3>
+                <p>使用 <code>Dns</code> 类进行 DNS 查询：</p>
+                <pre><code>public async Task&lt;DnsQueryResult&gt; NsLookupAsync(string domain)
+{
+    try
+    {
+        var hostEntry = await Dns.GetHostEntryAsync(domain);
+        var addresses = hostEntry.AddressList.Select(ip =&gt; ip.ToString()).ToList();
+        
+        return new DnsQueryResult(domain, addresses);
+    }
+    catch (SocketException ex)
+    {
+        throw new DnsException("DNS查询失败", ex);
+    }
+}</code></pre>
+
+                <h3>端口扫描实现</h3>
+                <p>使用 <code>TcpClient</code> 进行端口扫描：</p>
+                <pre><code>public async Task&lt;PortScanResult&gt; ScanPortsAsync(string host, int startPort, int endPort)
+{
+    var openPorts = new List&lt;int&gt;();
+    var tasks = new List&lt;Task&gt;();
+    
+    for (int port = startPort; port &lt;= endPort; port++)
+    {
+        tasks.Add(Task.Run(async () =&gt;
+        {
+            using var client = new TcpClient();
+            try
+            {
+                await client.ConnectAsync(host, port, 100);
+                lock (openPorts)
+                {
+                    openPorts.Add(port);
+                }
+            }
+            catch
+            {
+                // 端口关闭
+            }
+        }));
+    }
+    
+    await Task.WhenAll(tasks);
+    return new PortScanResult(host, openPorts);
+}</code></pre>
+
+                <h2>UI/UX 设计</h2>
+                <p>在设计 UI 时，我注重以下几点：</p>
+
+                <h3>1. 统一的界面风格</h3>
+                <p>所有工具都采用一致的设计语言，包括配色、字体、布局等。</p>
+
+                <h3>2. 清晰的结果展示</h3>
+                <p>使用表格、图表等多种方式展示结果，便于用户理解。</p>
+
+                <h3>3. 实时反馈</h3>
+                <p>对于长时间运行的操作，提供进度指示和取消功能。</p>
+
+                <h3>4. 历史记录</h3>
+                <p>保存用户的查询历史，方便重复使用。</p>
+
+                <h2>性能优化</h2>
+
+                <h3>1. 异步操作</h3>
+                <p>所有网络操作都使用 async/await，避免阻塞 UI 线程。</p>
+
+                <h3>2. 并发控制</h3>
+                <p>使用 <code>SemaphoreSlim</code> 控制并发数量，避免过度消耗资源。</p>
+                <pre><code>private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(10);
+
+public async Task&lt;PortScanResult&gt; ScanPortsAsync(...)
+{
+    var tasks = new List&lt;Task&gt;();
+    
+    for (int port = startPort; port &lt;= endPort; port++)
+    {
+        tasks.Add(ScanPortAsync(host, port));
+    }
+    
+    await Task.WhenAll(tasks);
+    // ...
+}
+
+private async Task ScanPortAsync(string host, int port)
+{
+    await _semaphore.WaitAsync();
+    try
+    {
+        // 扫描端口
+    }
+    finally
+    {
+        _semaphore.Release();
+    }
+}</code></pre>
+
+                <h3>3. 结果缓存</h3>
+                <p>对于 DNS 查询等结果，实现缓存机制。</p>
+
+                <h2>测试与质量保证</h2>
+                <ul>
+                    <li><strong>单元测试</strong>：对核心逻辑进行单元测试</li>
+                    <li><strong>集成测试</strong>：测试各种网络功能</li>
+                    <li><strong>性能测试</strong>：测试大规模扫描的性能</li>
+                    <li><strong>兼容性测试</strong>：在不同网络环境下测试</li>
+                </ul>
+
+                <h2>遇到的挑战</h2>
+
+                <h3>1. 跨平台网络访问</h3>
+                <p>Windows UWP 环境下网络访问有一定限制，需要正确配置网络能力。</p>
+
+                <h3>2. 端口扫描性能</h3>
+                <p>大量端口扫描时需要注意性能优化和资源管理。</p>
+
+                <h3>3. 结果解析</h3>
+                <p>不同网络工具返回的结果格式各异，需要统一处理。</p>
+
+                <h2>未来计划</h2>
+                <ul>
+                    <li>添加更多网络工具（如 Netstat、Route 等）</li>
+                    <li>支持自定义命令组合</li>
+                    <li>添加网络监控功能</li>
+                    <li>支持结果导出和报告生成</li>
+                </ul>
+
+                <h2>总结</h2>
+                <p>开发 Network Utility Kit 是一个充满挑战但也很有成就感的过程。通过这个项目，我深入学习了网络编程、异步编程、UI 设计等多个领域的知识。希望这款工具能够帮助更多的开发者和网络管理员提高工作效率。</p>
+            </div>
+
+            <!-- Article Footer -->
+            <footer class="article-footer">
+                <div class="article-tags">
+                    <span class="tag-label">标签：</span>
+                    <a href="#" class="article-tag-link">网络编程</a>
+                    <a href="#" class="article-tag-link">Network Utility Kit</a>
+                    <a href="#" class="article-tag-link">WinUI 3</a>
+                    <a href="#" class="article-tag-link">架构设计</a>
+                </div>
+            </footer>
+        </div>
+    </article>
+
+    <!-- Related Articles -->
+    <section class="related-articles">
+        <div class="container">
+            <h3>相关文章</h3>
+            <div class="related-articles-grid">
+                <a href="csharp-performance.html" class="related-article-card">
+                    <span class="related-tag">性能优化</span>
+                    <h4>C# 应用性能优化指南：10个实用技巧</h4>
+                    <p>深入了解 C# 应用性能优化的核心技巧...</p>
+                </a>
+                <a href="winui3-development.html" class="related-article-card">
+                    <span class="related-tag">Windows开发</span>
+                    <h4>WinUI 3 开发实战：从零开始构建现代Windows应用</h4>
+                    <p>探索 WinUI 3 的强大功能，学习如何创建具有流畅动画...</p>
+                </a>
+                <a href="indie-developer-tips.html" class="related-article-card">
+                    <span class="related-tag">经验分享</span>
+                    <h4>独立开发者的日常：时间管理与效率提升</h4>
+                    <p>如何在有限的时间内完成更多工作？分享我的时间管理方法...</p>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Huafeirong. 保留所有权利。</p>
+            <p class="beian"><a href="https://beian.miit.gov.cn/" target="_blank" rel="nofollow">渝ICP备2026006318号-1</a></p>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,3 +1,7 @@
+// Author: Huafeirong (https://github.com/huarongfei)
+// Project: EventControlSystem (https://github.com/huarongfei/EventControlSystem)
+// Copyright © 2026 Huafeirong. All rights reserved.
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")

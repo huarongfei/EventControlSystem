@@ -1,3 +1,11 @@
+/**
+ * EventControlSystem - Android Referee App
+ * 
+ * Author: Huafeirong (https://github.com/huarongfei)
+ * Project: https://github.com/huarongfei/EventControlSystem
+ * Copyright © 2026 Huafeirong. All rights reserved.
+ */
+
 package com.eventcontrol.refereeapp
 
 import android.os.Build

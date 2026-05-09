@@ -7,6 +7,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>BroadcastControl</AssemblyName>
     <RootNamespace>BroadcastControl</RootNamespace>
+    <Authors>Huafeirong</Authors>
+    <Copyright>Copyright © 2026 Huafeirong</Copyright>
+    <PackageProjectUrl>https://github.com/huarongfei/EventControlSystem</PackageProjectUrl>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />

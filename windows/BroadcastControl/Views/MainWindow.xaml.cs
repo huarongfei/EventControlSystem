@@ -1,3 +1,8 @@
+// EventControlSystem - Windows Broadcast Control System
+// Author: Huafeirong (https://github.com/huarongfei)
+// Project: https://github.com/huarongfei/EventControlSystem
+// Copyright © 2026 Huafeirong. All rights reserved.
+
 using System.Windows;
 using System.Windows.Input;
 using BroadcastControl.ViewModels;

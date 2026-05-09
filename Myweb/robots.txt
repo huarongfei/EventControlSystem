@@ -1,0 +1,48 @@
+User-agent: *
+Allow: /
+Disallow: /private/
+Disallow: /admin/
+Disallow: /config/
+
+Sitemap: https://huafeirong.com/sitemap.xml
+
+# 禁止爬虫访问的文件类型
+Disallow: /*.php$
+Disallow: /*.js$
+Disallow: /*.css$
+Disallow: /*.json$
+
+# 允许爬虫访问的页面类型
+Allow: /*.html
+Allow: /*.xml
+
+# 允许搜索引擎索引的路径
+Allow: /blog/
+Allow: /index.html
+Allow: /blog.html
+
+# 爬取延迟设置
+Crawl-delay: 2
+
+# 优先爬取页面
+Sitemap: https://huafeirong.com/sitemap.xml
+
+# 谷歌广告规则
+User-agent: Mediapartners-Google
+Allow: /
+
+# 社交媒体爬虫规则
+User-agent: Twitterbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: facebookexternalhit
+Allow: /
+Crawl-delay: 1
+
+# 禁止恶意爬虫
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /

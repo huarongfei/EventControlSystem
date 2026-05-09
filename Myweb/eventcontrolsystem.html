@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="EventControlSystem - 大型体育比赛综合管理系统，五端协同开源项目。由 Huafeirong 开发，欢迎更多开发者参与！">
+    <meta name="keywords" content="体育比赛,裁判系统,实时计分,导播控制,开源项目,EventControlSystem">
+    <meta name="author" content="Huafeirong">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="EventControlSystem - 体育比赛综合管理系统">
+    <meta property="og:description" content="五端协同的体育比赛管理系统，开源欢迎贡献">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://huafeirong.com/eventcontrolsystem.html">
+    <link rel="canonical" href="https://huafeirong.com/eventcontrolsystem.html">
+    <title>EventControlSystem - 体育比赛综合管理系统 | Huafeirong</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="blog.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <meta name="theme-color" content="#0a0e17">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Project page specific styles */
+        .project-hero {
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: radial-gradient(ellipse at top, rgba(16, 185, 129, 0.15), transparent 50%),
+                        radial-gradient(ellipse at bottom right, rgba(59, 130, 246, 0.1), transparent 50%);
+            padding-top: 80px;
+        }
+        .project-hero-content {
+            text-align: center;
+            z-index: 1;
+            max-width: 800px;
+        }
+        .project-badge {
+            display: inline-block;
+            padding: 0.5rem 1.25rem;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 2rem;
+            color: #10B981;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 2rem;
+        }
+        .project-hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #10B981, #3B82F6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .project-hero p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            line-height: 1.8;
+        }
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        /* Architecture Section */
+        .architecture {
+            background: var(--bg-secondary);
+            padding: 6rem 0;
+        }
+        .arch-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 3rem;
+        }
+        .arch-card {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 1rem;
+            padding: 2rem;
+            backdrop-filter: blur(20px);
+            transition: all 0.3s ease;
+        }
+        .arch-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+        .arch-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+            color: #10B981;
+        }
+        .arch-card .tech-stack {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 0.75rem;
+        }
+        .arch-card p {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            line-height: 1.6;
+        }
+        /* Features Section */
+        .features {
+            background: var(--bg-primary);
+            padding: 6rem 0;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 3rem;
+        }
+        .feature-item {
+            padding: 1.5rem;
+            border-left: 3px solid #10B981;
+            background: rgba(16, 185, 129, 0.05);
+            border-radius: 0 0.5rem 0.5rem 0;
+        }
+        .feature-item h4 {
+            font-size: 1.125rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+        .feature-item p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+        /* Call to Action */
+        .cta-section {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(59, 130, 246, 0.1));
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 1.5rem;
+            padding: 4rem 2rem;
+            text-align: center;
+            margin: 4rem 0;
+        }
+        .cta-section h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+        .cta-section p {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        /* Author Section */
+        .author-section {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin: 3rem 0;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+        .author-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--gradient-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            font-weight: 700;
+        }
+        .author-info h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+        .author-info p {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+        }
+        @media (max-width: 768px) {
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            .author-section {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body class="has-navbar">
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="nav-logo">
+                <span>Huafeirong</span>
+            </a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">首页</a>
+                <a href="blog.html" class="nav-link">博客</a>
+                <a href="eventcontrolsystem.html" class="nav-link active">EventControlSystem</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Project Hero Section -->
+    <section class="project-hero">
+        <div class="container">
+            <div class="project-hero-content">
+                <div class="project-badge">🏆 开源项目 · 欢迎贡献</div>
+                <h1>EventControlSystem</h1>
+                <p class="subtitle">大型体育比赛综合管理系统</p>
+                <p>集成导播控制、实时计分、赛况分析、移动裁判端于一体的五端协同平台。致力于为体育赛事提供专业、高效、实时的一体化解决方案。</p>
+                <div class="hero-buttons">
+                    <a href="https://github.com/huarongfei/EventControlSystem" target="_blank" class="btn btn-primary">
+                        ⭐ GitHub 开源地址
+                    </a>
+                    <a href="https://github.com/huarongfei/EventControlSystem/fork" target="_blank" class="btn btn-secondary">
+                        🍴 Fork 参与开发
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Architecture Section -->
+    <section class="architecture">
+        <div class="container">
+            <h2 class="section-title">五端协同架构</h2>
+            <p class="section-subtitle">所有端通过 WebSocket 实时同步，延迟 < 100ms</p>
+            <div class="arch-grid">
+                <div class="arch-card">
+                    <h3>🔧 Web 后端</h3>
+                    <p class="tech-stack">Node.js + Express + TypeScript + Prisma + Socket.IO</p>
+                    <p>核心服务端，提供 REST API 和 WebSocket 实时通信。使用 SQLite（开发）/ PostgreSQL（生产）。</p>
+                </div>
+                <div class="arch-card">
+                    <h3>🖥️ Windows 计分裁判软件</h3>
+                    <p class="tech-stack">WPF + .NET 8.0 + MVVM</p>
+                    <p>专业计分界面，支持快捷键操作、比赛计时、事件上报。适用于现场裁判使用。</p>
+                </div>
+                <div class="arch-card">
+                    <h3>🎬 Windows 导播控制软件</h3>
+                    <p class="tech-stack">WPF + .NET 8.0 + MVVM</p>
+                    <p>导播台界面，支持多摄像机切换、转场效果、慢动作标记。让赛事直播更专业。</p>
+                </div>
+                <div class="arch-card">
+                    <h3>📱 Android 裁判端</h3>
+                    <p class="tech-stack">Kotlin + Jetpack Compose + Material 3</p>
+                    <p>移动裁判端，支持离线操作、自动同步。让裁判在场地任意位置都能上报比赛事件。</p>
+                </div>
+                <div class="arch-card">
+                    <h3>📱 HarmonyOS 裁判端</h3>
+                    <p class="tech-stack">ArkTS + ArkUI + HarmonyOS NEXT</p>
+                    <p>鸿蒙裁判端，与 Android 端功能一致，支持鸿蒙生态设备。</p>
+                </div>
+                <div class="arch-card">
+                    <h3>📊 Web 赛况分析面板</h3>
+                    <p class="tech-stack">React + TypeScript + TailwindCSS + Vite</p>
+                    <p>实时赛况可视化面板，提供数据统计、图表分析、比赛回放功能。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">核心特性</h2>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <h4>⚡ 实时同步</h4>
+                    <p>所有端通过 Socket.IO 保持实时同步，事件广播延迟 < 100ms，确保比赛状态即时更新。</p>
+                </div>
+                <div class="feature-item">
+                    <h4>📴 离线优先</h4>
+                    <p>Android/HarmonyOS 端支持离线操作，网络恢复后自动同步队列中的数据，永不丢失。</p>
+                </div>
+                <div class="feature-item">
+                    <h4>🏗️ 现代架构</h4>
+                    <p>采用 MVVM、Clean Architecture 等现代架构模式，代码清晰、易维护、易扩展。</p>
+                </div>
+                <div class="feature-item">
+                    <h4>🎨 精美 UI</h4>
+                    <p>深色主题设计，流畅动画效果，响应式布局，提供优质的用户体验。</p>
+                </div>
+                <div class="feature-item">
+                    <h4>🔌 开放 API</h4>
+                    <p>完整的 REST API 和 WebSocket 接口，方便第三方系统集成和扩展。</p>
+                </div>
+                <div class="feature-item">
+                    <h4>📦 开箱即用</h4>
+                    <p>详细的文档、种子数据、一键启动脚本，让开发者快速上手。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action: Want More Developers -->
+    <section class="architecture">
+        <div class="container">
+            <div class="cta-section">
+                <h2>🙌 欢迎加入开发！</h2>
+                <p>EventControlSystem 是一个开源项目，由 <strong>Huafeirong</strong> 发起并维护。我们热烈欢迎更多开发者参与贡献，一起打造更专业的体育赛事管理系统！</p>
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                    <a href="https://github.com/huarongfei/EventControlSystem/issues" target="_blank" class="btn btn-primary">
+                        🐛 提交 Issue
+                    </a>
+                    <a href="https://github.com/huarongfei/EventControlSystem/pulls" target="_blank" class="btn btn-secondary">
+                        🔀 提交 Pull Request
+                    </a>
+                    <a href="https://github.com/huarongfei/EventControlSystem/wiki" target="_blank" class="btn btn-secondary">
+                        📚 查看文档
+                    </a>
+                </div>
+                <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--glass-border);">
+                    <p style="font-size: 0.9375rem; color: var(--text-secondary);">
+                        💡 无论你是前端、后端、移动端开发者，还是 UI/UX 设计师，<br>
+                        都欢迎为这个项目贡献你的力量！
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Author Section -->
+    <section class="features">
+        <div class="container">
+            <div class="author-section">
+                <div class="author-avatar">H</div>
+                <div class="author-info">
+                    <h3>开发者：Huafeirong</h3>
+                    <p>独立开发者，专注于 Windows 应用开发和开源项目。致力于创造实用且优雅的工具。</p>
+                    <p style="margin-top: 0.5rem;">
+                        GitHub：<a href="https://github.com/huarongfei" target="_blank" style="color: #10B981; text-decoration: none;">@huarongfei</a>
+                        ｜
+                        Gitee：<a href="https://gitee.com/rong-weiran" target="_blank" style="color: #10B981; text-decoration: none;">@rong-weiran</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Huafeirong. 保留所有权利。</p>
+            <p class="beian"><a href="https://beian.miit.gov.cn/" target="_blank" rel="nofollow">渝ICP备2026006318号-1</a></p>
+        </div>
+    </footer>
+</body>
+</html>

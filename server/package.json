@@ -2,6 +2,12 @@
   "name": "ecs-server",
   "version": "1.0.0",
   "description": "EventControlSystem Web Backend",
+  "author": "Huafeirong (https://github.com/huarongfei)",
+  "homepage": "https://github.com/huarongfei/EventControlSystem",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/huarongfei/EventControlSystem.git"
+  },
   "main": "dist/index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",

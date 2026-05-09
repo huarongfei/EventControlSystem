@@ -1,6 +1,14 @@
 # EventControlSystem (ECS)
 
+**开发者 / Developer:** Huafeirong  
+**GitHub:** https://github.com/huarongfei/EventControlSystem  
+**开源协议 / License:** MIT
+
+---
+
 大型体育比赛综合管理系统 — 集成导播控制、实时计分、赛况分析、移动裁判端于一体的五端协同平台。
+
+🙌 **欢迎贡献！** 这是一个开源项目，热烈欢迎更多开发者参与开发。请访问 GitHub 提交 Issue 或 Pull Request。
 
 ## 系统架构
 

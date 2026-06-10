@@ -17,6 +17,43 @@ const ALL_EVENT_TYPES = [
   'finish','dq','withdraw',
 ] as const;
 
+// ─── 统计字段标准化映射（中文规则名 → 英文API字段名） ───
+// 前端组件依赖固定的英文字段名，后端规则使用中文名。
+// 此映射确保 API 返回一致的英文键，无论运动类型如何。
+const STAT_FIELD_MAP: Record<string, string> = {
+  // 通用
+  '得分': 'points',
+  '篮板': 'totalRebounds',
+  '助攻': 'assists',
+  '抢断': 'steals',
+  '盖帽': 'blocks',
+  '犯规': 'fouls',
+  '失误': 'turnovers',
+  // 篮球细分
+  '二分命中': 'twoPointMade',
+  '二分尝试': 'twoPointAttempted',
+  '三分命中': 'threePointMade',
+  '三分尝试': 'threePointAttempted',
+  '罚球命中': 'freeThrowMade',
+  '罚球尝试': 'freeThrowAttempted',
+  '进攻篮板': 'offensiveRebounds',
+  '防守篮板': 'defensiveRebounds',
+  // 足球
+  '进球': 'goals',
+  '射门': 'shots',
+  '射正': 'shotsOnTarget',
+  '角球': 'corners',
+  // 排球
+  '发球': 'serves',
+  '扣球': 'spikes',
+  '拦网': 'blocks',
+};
+
+/** 将后端规则的中文统计键转换为标准英文字段名 */
+function normalizeStatKey(key: string): string {
+  return STAT_FIELD_MAP[key] || key;
+}
+
 // ─── Schemas ──────────────────────────────────────────────────
 
 const updateScoreSchema = z.object({
@@ -152,7 +189,7 @@ export class MatchService {
         home_score: m.homeScore,
         away_score: m.awayScore,
         status: mapStatus(m.status),
-        current_period: m.currentPeriod,
+        currentQuarter: m.currentPeriod,       // 前端 MatchListItem 类型使用 currentQuarter
         total_periods: rule.periodNames.length,
         period_duration_minutes: m.periodDuration ?? rule.periodDuration ?? 10,
         period_label: rule.periodNames[m.currentPeriod - 1] ?? `第${m.currentPeriod}节`,
@@ -221,7 +258,24 @@ export class MatchService {
           position: player.position,
         },
       };
-      for (const f of statFields) obj[f] = 0;
+      for (const f of statFields) obj[normalizeStatKey(f)] = 0;
+      // 确保基础字段始终存在（前端类型依赖）
+      obj.points ??= 0;
+      obj.totalRebounds ??= 0;
+      obj.assists ??= 0;
+      obj.steals ??= 0;
+      obj.blocks ??= 0;
+      obj.turnovers ??= 0;
+      obj.fouls ??= 0;
+      obj.twoPointMade ??= 0;
+      obj.twoPointAttempted ??= 0;
+      obj.threePointMade ??= 0;
+      obj.threePointAttempted ??= 0;
+      obj.freeThrowMade ??= 0;
+      obj.freeThrowAttempted ??= 0;
+      obj.offensiveRebounds ??= 0;
+      obj.defensiveRebounds ??= 0;
+      obj.efficiency ??= 0;
       playerStatMap[player.id] = obj;
     };
 
@@ -235,17 +289,20 @@ export class MatchService {
 
       if (ev.type === 'score') {
         const pts = detail.points ?? 1;
-        ps['得分'] = (ps['得分'] || 0) + pts;
+        const pointsKey = normalizeStatKey('得分');
+        ps[pointsKey] = (ps[pointsKey] || 0) + pts;
         // 篮球细分（兼容）
         if (rule.sportType === 'basketball') {
-          if (pts === 3) { ps['三分命中'] = (ps['三分命中'] || 0) + 1; ps['三分尝试'] = (ps['三分尝试'] || 0) + 1; }
-          else if (pts === 1) { ps['罚球命中'] = (ps['罚球命中'] || 0) + 1; ps['罚球尝试'] = (ps['罚球尝试'] || 0) + 1; }
-          else { ps['二分命中'] = (ps['二分命中'] || 0) + 1; ps['二分尝试'] = (ps['二分尝试'] || 0) + 1; }
+          if (pts === 3) { ps[normalizeStatKey('三分命中')] = (ps[normalizeStatKey('三分命中')] || 0) + 1; ps[normalizeStatKey('三分尝试')] = (ps[normalizeStatKey('三分尝试')] || 0) + 1; }
+          else if (pts === 1) { ps[normalizeStatKey('罚球命中')] = (ps[normalizeStatKey('罚球命中')] || 0) + 1; ps[normalizeStatKey('罚球尝试')] = (ps[normalizeStatKey('罚球尝试')] || 0) + 1; }
+          else { ps[normalizeStatKey('二分命中')] = (ps[normalizeStatKey('二分命中')] || 0) + 1; ps[normalizeStatKey('二分尝试')] = (ps[normalizeStatKey('二分尝试')] || 0) + 1; }
         }
       } else if (ev.type === 'foul' || ev.type === 'yellow_card' || ev.type === 'red_card') {
-        ps['犯规'] = (ps['犯规'] || 0) + 1;
+        const foulKey = normalizeStatKey('犯规');
+        ps[foulKey] = (ps[foulKey] || 0) + 1;
       } else if (ev.type === 'assist') {
-        ps['助攻'] = (ps['助攻'] || 0) + 1;
+        const assistKey = normalizeStatKey('助攻');
+        ps[assistKey] = (ps[assistKey] || 0) + 1;
       }
     }
 
@@ -282,20 +339,29 @@ export class MatchService {
     const homePlayerStats = homeTeam.players.map((p: any) => playerStatMap[p.id]).filter(Boolean);
     const awayPlayerStats = awayTeam.players.map((p: any) => playerStatMap[p.id]).filter(Boolean);
 
+    // 计算衍生统计：总篮板 + 效率值
+    const deriveStats = (players: any[]) => players.map(p => {
+      p.totalRebounds = (p.offensiveRebounds || 0) + (p.defensiveRebounds || 0);
+      // 简化效率公式: PTS + REB + AST + STL + BLK - TO
+      p.efficiency = (p.points || 0) + (p.totalRebounds || 0) + (p.assists || 0)
+        + (p.steals || 0) + (p.blocks || 0) - (p.turnovers || 0);
+      return p;
+    });
+
     return {
       id: match.id,
       category: 'team',
       sportType: rule.sportType,
       homeTeam: this.formatTeam(homeTeam),
       awayTeam: this.formatTeam(awayTeam),
-      homeStats: this.calcTeamStats(homePlayerStats, match.homeScore, homeTeam.id, homeTeam, rule),
-      awayStats: this.calcTeamStats(awayPlayerStats, match.awayScore, awayTeam.id, awayTeam, rule),
-      homePlayers: homePlayerStats,
-      awayPlayers: awayPlayerStats,
+      homeStats: this.calcTeamStats(deriveStats(homePlayerStats), match.homeScore, homeTeam.id, homeTeam, rule),
+      awayStats: this.calcTeamStats(deriveStats(awayPlayerStats), match.awayScore, awayTeam.id, awayTeam, rule),
+      homePlayers: deriveStats(homePlayerStats),
+      awayPlayers: deriveStats(awayPlayerStats),
       events: eventsFormatted,
       scoreTrend,
       status: mapStatus(match.status),
-      currentPeriod: match.currentPeriod,
+      currentQuarter: match.currentPeriod,       // 前端类型使用 currentQuarter
       periodLabel: rule.periodNames[match.currentPeriod - 1] ?? `第${match.currentPeriod}节`,
       gameClock: match.matchTime,
       startTime: match.startedAt?.toISOString() ?? match.createdAt.toISOString(),
@@ -346,7 +412,8 @@ export class MatchService {
       score,
     };
     for (const f of rule.teamStats) {
-      stats[f] = players.reduce((s: number, p: any) => s + (p[f] || 0), 0);
+      const normalizedKey = normalizeStatKey(f);
+      stats[normalizedKey] = players.reduce((s: number, p: any) => s + (p[normalizedKey] || 0), 0);
     }
     return stats;
   }

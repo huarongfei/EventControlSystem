@@ -19,6 +19,10 @@ class OfflineQueue(private val context: Context) {
 
     companion object {
         private val QUEUE_KEY = stringPreferencesKey("event_queue")
+
+        /** Maximum number of events queued locally to prevent DataStore bloat.
+         *  When the limit is reached, oldest events are discarded. */
+        const val MAX_QUEUE_SIZE = 500
     }
 
     val pendingEventsFlow: Flow<List<MatchEvent>> = context.offlineQueueStore.data.map { preferences ->
@@ -30,6 +34,11 @@ class OfflineQueue(private val context: Context) {
         context.offlineQueueStore.edit { preferences ->
             val currentJson = preferences[QUEUE_KEY] ?: "[]"
             val events = parseEvents(currentJson).toMutableList()
+            // Enforce queue size limit — discard oldest events when at capacity
+            if (events.size >= MAX_QUEUE_SIZE) {
+                val excess = events.size - MAX_QUEUE_SIZE + 1
+                repeat(excess) { if (events.isNotEmpty()) events.removeAt(0) }
+            }
             events.add(event)
             preferences[QUEUE_KEY] = gson.toJson(events.map { it.toDto() })
         }

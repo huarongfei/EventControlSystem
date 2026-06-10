@@ -125,6 +125,25 @@ app.use(errorHandler);
 initSocket(server);
 
 // Start server
+// ─── 启动前环境变量校验 ──────────────────────────
+const requiredEnvVars: string[] = ['DATABASE_URL'];
+const missingVars: string[] = [];
+for (const envVar of requiredEnvVars) {
+  if (!process.env[envVar]) missingVars.push(envVar);
+}
+if (missingVars.length > 0) {
+  logger.error(`[Startup] Missing required environment variables: ${missingVars.join(', ')}`);
+  logger.error('[Server] Cannot start. Please check your .env configuration.');
+  process.exit(1);
+}
+
+if (config.nodeEnv === 'production' && !process.env.JWT_SECRET) {
+  logger.error('[Startup] JWT_SECRET is required in production mode');
+  process.exit(1);
+}
+
+logger.info(`[Startup] Environment validation passed (env=${config.nodeEnv})`);
+
 server.listen(config.port, () => {
   logger.info(`ECS Server running on port ${config.port}`);
   logger.info(`WebSocket: ws://localhost:${config.port}/socket.io`);

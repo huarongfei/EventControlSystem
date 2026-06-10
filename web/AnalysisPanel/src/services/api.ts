@@ -46,14 +46,17 @@ export const matchApi = {
 
   /** 获取比赛的球员统计数据 */
   getPlayerStats: async (matchId: string): Promise<Match['homePlayers'] & Match['awayPlayers']> => {
-    const { data } = await api.get(`/api/matches/${matchId}/stats`);
+    const { data } = await api.get(`/api/matches/${matchId}/statistics`);
+    // statistics 端点返回 { matchId, category, teamStats, currentScore }
+    // 球员统计需要从详情接口获取（已包含 homePlayers/awayPlayers）
     return data;
   },
 
-  /** 获取比赛的得分走势 */
+  /** 获取比赛的得分走势（从详情数据中提取，此方法保留为兼容层） */
   getScoreTrend: async (matchId: string): Promise<Match['scoreTrend']> => {
-    const { data } = await api.get(`/api/matches/${matchId}/trend`);
-    return data;
+    // scoreTrend 已嵌入在 /detail 响应中，此处直接调用详情端点提取
+    const { data } = await api.get(`/api/matches/${matchId}/detail`);
+    return data.scoreTrend ?? [];
   },
 
   /** 导出比赛数据 */

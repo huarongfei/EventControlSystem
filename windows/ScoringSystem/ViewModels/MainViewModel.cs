@@ -1137,6 +1137,20 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         _socketService.OnScoreUpdate += HandleScoreUpdate;
 
+        _socketService.OnMatchEvent += (matchEvent) =>
+        {
+            // Update foul counts in real-time from remote clients
+            App.Current.Dispatcher.Invoke(() =>
+            {
+                if (matchEvent.MatchId != SelectedMatch?.Id) return;
+                if (matchEvent.Type == "foul")
+                {
+                    if (matchEvent.Team == "home") HomeFouls++;
+                    else if (matchEvent.Team == "away") AwayFouls++;
+                }
+            });
+        };
+
         _socketService.OnError += (err) =>
         {
             App.Current.Dispatcher.Invoke(() =>
@@ -1288,7 +1302,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand]
-    private void SelectAndEnterMatch(Match? match)
+    private async void SelectAndEnterMatch(Match? match)
     {
         if (match == null) return;
 
@@ -1300,9 +1314,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
         AwayTeamName = match.AwayTeam.Name;
         HomeScore = match.HomeScore;
         AwayScore = match.AwayScore;
-        HomeFouls = 0;  // TODO: 从API获取主队犯规数据
-        AwayFouls = 0;  // TODO: 从API获取客队犯规数据
         CurrentPeriod = match.CurrentPeriod;
+
+        // Fetch foul data from match detail API
+        _ = LoadFoulDataAsync(match.Id);
         TotalPeriods = match.TotalPeriods;
         PeriodDurationMinutes = match.PeriodDurationMinutes;
         MatchStatus = match.Status;
@@ -1312,6 +1327,30 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         // Subscribe to this match's socket room
         CurrentPage = "scoring";
+    }
+
+    /// <summary>
+    /// Load foul counts from the match detail API.
+    /// Fires and forgets — initializes HomeFouls/AwayFouls asynchronously.
+    /// </summary>
+    private async Task LoadFoulDataAsync(string matchId)
+    {
+        try
+        {
+            var detail = await _apiService.GetMatchDetailAsync(matchId);
+            if (detail == null) return;
+
+            // Dispatch to UI thread for property updates
+            Application.Current?.Dispatcher.Invoke(() =>
+            {
+                HomeFouls = detail.HomeStats?.GetStat("犯规", 0) ?? 0;
+                AwayFouls = detail.AwayStats?.GetStat("犯规", 0) ?? 0;
+            });
+        }
+        catch
+        {
+            // Best effort — local foul counting still works via foul button clicks
+        }
     }
 
     // Keep old SelectMatchCommand for backward compat

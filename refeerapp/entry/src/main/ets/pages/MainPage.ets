@@ -61,7 +61,20 @@ struct MainPage {
   
   // 离线提示
   @State showOfflineBanner: boolean = false;
-  
+
+  // 总节次数（从 detail 动态读取）
+  @State totalPeriods: number = 4;
+
+  // 生成节次数组（兼容 ArkTS）
+  private getQuarterArray(): number[] {
+    const arr: number[] = [];
+    const total = this.totalPeriods ?? 4;
+    for (let i = 1; i <= total; i++) {
+      arr.push(i);
+    }
+    return arr;
+  }
+
   // 私有变量
   private longPressTimer: number = -1;
   private readonly LONG_PRESS_DURATION: number = 800; // 长按确认时间(ms)
@@ -107,6 +120,8 @@ struct MainPage {
         this.connectionState = ConnectionState.CONNECTED;
         // 异步加载犯规类型，不阻塞主流程
         this.loadFoulTypes(result.data.sportType);
+        // 读取总节次数
+        this.totalPeriods = result.data.totalPeriods ?? 4;
         this.connectSocket();
       } else {
         this.errorMessage = result.error || '获取比赛信息失败';
@@ -417,7 +432,7 @@ struct MainPage {
 
   // 切换节次
   async changeQuarter(quarter: number): Promise<void> {
-    const total = 4; // 默认4节，TODO：从 detail 读取
+    const total = this.detail?.totalPeriods ?? 4; // 从 detail 读取总节次
     if (quarter < 1 || quarter > total) return;
 
     this.timerData = {
@@ -602,14 +617,14 @@ struct MainPage {
 
       // 节次切换
       Row() {
-        ForEach([1, 2, 3, 4], (quarter: number) => {
+        ForEach(this.getQuarterArray(), (quarter: number) => {
           Button(`Q${quarter}`)
             .width(56)
             .height(40)
             .fontSize(14)
             .fontWeight(FontWeight.Medium)
-            .backgroundColor(this.matchInfo?.currentQuarter === quarter ? '#007AFF' : '#F0F0F0')
-            .fontColor(this.matchInfo?.currentQuarter === quarter ? '#FFFFFF' : '#666666')
+            .backgroundColor(this.detail?.currentPeriod === quarter ? '#007AFF' : '#F0F0F0')
+            .fontColor(this.detail?.currentPeriod === quarter ? '#FFFFFF' : '#666666')
             .margin({ left: 4, right: 4 })
             .onClick(() => this.changeQuarter(quarter));
         });

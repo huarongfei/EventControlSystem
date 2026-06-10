@@ -1,0 +1,365 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "EventControlSystem API",
+    "description": "ECS 多端赛事评分系统 — REST API 文档。覆盖赛事管理、比赛控制、队伍选手、犯规类型、广播同步等全部接口。",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Huafeirong Studio",
+      "url": "https://github.com/huarongfei/EventControlSystem"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    { "url": "http://localhost:3001", "description": "本地开发" },
+    { "url": "https://ecs.huafeirong.com", "description": "生产环境" }
+  ],
+  "tags": [
+    { "name": "Health", "description": "健康检查" },
+    { "name": "Events", "description": "赛事管理" },
+    { "name": "Matches", "description": "比赛控制" },
+    { "name": "Teams", "description": "队伍 & 选手" },
+    { "name": "Sports", "description": "运动规则" },
+    { "name": "Broadcast", "description": "广播场景" },
+    { "name": "Sync", "description": "数据同步" },
+    { "name": "FoulTypes", "description": "犯规类型" }
+  ],
+  "paths": {
+    "/api/health": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "健康检查（含数据库连接状态）",
+        "responses": {
+          "200": { "description": "服务正常" },
+          "503": { "description": "服务降级（数据库不可用）" }
+        }
+      }
+    },
+    "/api/events": {
+      "get": {
+        "tags": ["Events"],
+        "summary": "获取所有赛事",
+        "parameters": [
+          { "name": "sportType", "in": "query", "schema": { "type": "string" }, "description": "按运动类型筛选" },
+          { "name": "status", "in": "query", "schema": { "type": "string" }, "description": "按状态筛选" }
+        ],
+        "responses": { "200": { "description": "赛事列表" } }
+      },
+      "post": {
+        "tags": ["Events"],
+        "summary": "创建新赛事",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateEvent" } } } },
+        "responses": { "201": { "description": "创建成功" } }
+      }
+    },
+    "/api/events/{id}": {
+      "get": {
+        "tags": ["Events"],
+        "summary": "获取单个赛事详情",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "赛事详情" } }
+      },
+      "delete": {
+        "tags": ["Events"],
+        "summary": "删除赛事",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "204": { "description": "删除成功" } }
+      }
+    },
+    "/api/events/{id}/matches": {
+      "get": {
+        "tags": ["Events"],
+        "summary": "获取赛事下所有比赛",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "比赛列表" } }
+      }
+    },
+    "/api/matches": {
+      "get": {
+        "tags": ["Matches"],
+        "summary": "获取所有比赛",
+        "parameters": [
+          { "name": "eventId", "in": "query", "schema": { "type": "string" }, "description": "按赛事筛选" },
+          { "name": "status", "in": "query", "schema": { "type": "string" }, "description": "按状态筛选" },
+          { "name": "sportType", "in": "query", "schema": { "type": "string" }, "description": "按运动类型筛选" }
+        ],
+        "responses": { "200": { "description": "比赛列表" } }
+      },
+      "post": {
+        "tags": ["Matches"],
+        "summary": "创建新比赛",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateMatch" } } } },
+        "responses": { "201": { "description": "创建成功" } }
+      }
+    },
+    "/api/matches/{id}": {
+      "get": {
+        "tags": ["Matches"],
+        "summary": "获取单个比赛",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "比赛详情" } }
+      },
+      "put": {
+        "tags": ["Matches"],
+        "summary": "更新比赛信息",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "更新成功" } }
+      },
+      "delete": {
+        "tags": ["Matches"],
+        "summary": "删除比赛",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "204": { "description": "删除成功" } }
+      }
+    },
+    "/api/matches/{id}/detail": {
+      "get": {
+        "tags": ["Matches"],
+        "summary": "获取比赛完整详情（含犯规统计）",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "完整详情" } }
+      }
+    },
+    "/api/matches/{id}/statistics": {
+      "get": {
+        "tags": ["Matches"],
+        "summary": "获取比赛统计数据",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "统计数据" } }
+      }
+    },
+    "/api/matches/{id}/broadcast": {
+      "get": {
+        "tags": ["Matches"],
+        "summary": "获取广播场景",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "广播场景" } }
+      },
+      "put": {
+        "tags": ["Matches"],
+        "summary": "更新广播场景（通过 Socket.IO 广播）",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "更新成功" } }
+      }
+    },
+    "/api/matches/{id}/export": {
+      "get": {
+        "tags": ["Matches"],
+        "summary": "导出比赛数据",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "format", "in": "query", "schema": { "type": "string", "enum": ["json", "csv"] }, "description": "导出格式" }
+        ],
+        "responses": { "200": { "description": "导出文件" } }
+      }
+    },
+    "/api/matches/{id}/participants": {
+      "get": {
+        "tags": ["Matches"],
+        "summary": "获取参赛选手（B类竞速运动）",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "选手列表" } }
+      },
+      "post": {
+        "tags": ["Matches"],
+        "summary": "添加参赛选手",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "201": { "description": "添加成功" } }
+      }
+    },
+    "/api/matches/{id}/participants/{pid}/time": {
+      "put": {
+        "tags": ["Matches"],
+        "summary": "更新选手计时",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "pid", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "更新成功" } }
+      }
+    },
+    "/api/matches/{id}/race-results": {
+      "get": {
+        "tags": ["Matches"],
+        "summary": "获取竞速结果",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "竞速结果" } }
+      }
+    },
+    "/api/matches/{id}/score": {
+      "put": {
+        "tags": ["Matches"],
+        "summary": "更新比分（通过 Socket.IO 广播）",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "更新成功" } }
+      }
+    },
+    "/api/matches/{id}/events": {
+      "post": {
+        "tags": ["Matches"],
+        "summary": "添加比赛事件（通过 Socket.IO 广播）",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "201": { "description": "创建成功" } }
+      }
+    },
+    "/api/matches/{id}/status": {
+      "put": {
+        "tags": ["Matches"],
+        "summary": "更新比赛状态（通过 Socket.IO 广播）",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "更新成功" } }
+      }
+    },
+    "/api/teams": {
+      "get": {
+        "tags": ["Teams"],
+        "summary": "获取所有队伍",
+        "responses": { "200": { "description": "队伍列表" } }
+      },
+      "post": {
+        "tags": ["Teams"],
+        "summary": "创建新队伍",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateTeam" } } } },
+        "responses": { "201": { "description": "创建成功" } }
+      }
+    },
+    "/api/teams/{id}": {
+      "get": {
+        "tags": ["Teams"],
+        "summary": "获取队伍详情",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "队伍详情" } }
+      },
+      "put": {
+        "tags": ["Teams"],
+        "summary": "更新队伍信息",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "更新成功" } }
+      },
+      "delete": {
+        "tags": ["Teams"],
+        "summary": "删除队伍",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "204": { "description": "删除成功" } }
+      }
+    },
+    "/api/teams/{id}/players": {
+      "get": {
+        "tags": ["Teams"],
+        "summary": "获取队伍所有队员",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "队员列表" } }
+      },
+      "post": {
+        "tags": ["Teams"],
+        "summary": "添加队员",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "201": { "description": "创建成功" } }
+      }
+    },
+    "/api/teams/players/{playerId}": {
+      "put": {
+        "tags": ["Teams"],
+        "summary": "更新队员信息",
+        "parameters": [{ "name": "playerId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "更新成功" } }
+      },
+      "delete": {
+        "tags": ["Teams"],
+        "summary": "删除队员",
+        "parameters": [{ "name": "playerId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "204": { "description": "删除成功" } }
+      }
+    },
+    "/api/sports": {
+      "get": {
+        "tags": ["Sports"],
+        "summary": "获取运动项目及规则",
+        "parameters": [{ "name": "category", "in": "query", "schema": { "type": "string", "enum": ["team", "race"] }, "description": "按类别筛选" }],
+        "responses": { "200": { "description": "运动列表" } }
+      }
+    },
+    "/api/broadcast/{matchId}": {
+      "get": {
+        "tags": ["Broadcast"],
+        "summary": "获取广播场景",
+        "parameters": [{ "name": "matchId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "广播场景" } }
+      },
+      "put": {
+        "tags": ["Broadcast"],
+        "summary": "更新广播场景",
+        "parameters": [{ "name": "matchId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "更新成功" } }
+      }
+    },
+    "/api/sync": {
+      "post": {
+        "tags": ["Sync"],
+        "summary": "批量同步比赛事件",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "properties": { "events": { "type": "array", "items": { "type": "object" } } } } } } },
+        "responses": { "200": { "description": "同步成功" } }
+      }
+    },
+    "/api/foul-types": {
+      "get": {
+        "tags": ["FoulTypes"],
+        "summary": "获取犯规类型列表",
+        "parameters": [{ "name": "sportType", "in": "query", "schema": { "type": "string" }, "description": "按运动类型筛选" }],
+        "responses": { "200": { "description": "犯规类型列表" } }
+      }
+    },
+    "/api/foul-types/sports": {
+      "get": {
+        "tags": ["FoulTypes"],
+        "summary": "获取所有运动类型及其犯规统计",
+        "responses": { "200": { "description": "运动犯规统计" } }
+      }
+    },
+    "/api/foul-types/{id}": {
+      "get": {
+        "tags": ["FoulTypes"],
+        "summary": "获取犯规类型详情",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "犯规类型详情" } }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CreateEvent": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string", "description": "赛事名称" },
+          "sportType": { "type": "string", "default": "basketball" },
+          "category": { "type": "string", "default": "team" },
+          "startTime": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CreateMatch": {
+        "type": "object",
+        "required": ["eventId", "homeTeamId", "awayTeamId"],
+        "properties": {
+          "eventId": { "type": "string" },
+          "homeTeamId": { "type": "string" },
+          "awayTeamId": { "type": "string" },
+          "category": { "type": "string" },
+          "sportType": { "type": "string" }
+        }
+      },
+      "CreateTeam": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string" },
+          "shortName": { "type": "string" },
+          "logoUrl": { "type": "string" }
+        }
+      }
+    }
+  }
+}

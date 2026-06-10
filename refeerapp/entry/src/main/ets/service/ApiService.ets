@@ -35,6 +35,7 @@ export interface MatchDetail {
   awayStats: { teamId: string; score: number };
   status: string;
   currentPeriod: number;
+  totalPeriods: number;
   periodLabel: string;
   gameClock: string;
 }

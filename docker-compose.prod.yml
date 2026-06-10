@@ -1,0 +1,83 @@
+# ECS 生产环境 Docker Compose 配置
+# 使用: docker compose -f docker-compose.prod.yml up -d
+# 要求: 设置环境变量 POSTGRES_PASSWORD, JWT_SECRET（不可默认值）
+
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ecs-postgres-prod
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ecs}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?err}
+      POSTGRES_DB: ${POSTGRES_DB:-ecs}
+    volumes:
+      - pgdata-prod:/var/lib/postgresql/data
+      - ./server/prisma/migrations/init/migration.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ecs}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    networks:
+      - ecs-net-prod
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: ecs-server-prod
+    restart: always
+    ports:
+      - "${PORT:-3001}:3001"
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-ecs}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-ecs}"
+      CORS_ORIGIN: ${CORS_ORIGIN:-*}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_DIR: /app/logs
+    volumes:
+      - server-logs-prod:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+    networks:
+      - ecs-net-prod
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+volumes:
+  pgdata-prod:
+  server-logs-prod:
+
+networks:
+  ecs-net-prod:
+    driver: bridge

@@ -31,12 +31,12 @@ public class BackendService : IDisposable
     /// <summary>
     /// 启动后端服务器 (Node.js + Express)
     /// </summary>
-    public async Task<bool> StartServerAsync()
+    public Task<bool> StartServerAsync()
     {
         if (IsServerRunning)
         {
             OutputReceived?.Invoke(this, "[Server] 后端服务已在运行中");
-            return true;
+            return Task.FromResult(true);
         }
 
         try
@@ -47,7 +47,7 @@ public class BackendService : IDisposable
             if (!Directory.Exists(ServerPath))
             {
                 OutputReceived?.Invoke(this, $"[Server] 错误: 找不到 server 目录: {ServerPath}");
-                return false;
+                return Task.FromResult(false);
             }
 
             // 启动 Node.js 服务
@@ -90,12 +90,12 @@ public class BackendService : IDisposable
             OutputReceived?.Invoke(this, $"[Server] 后端服务已启动 (PID: {_serverProcess.Id})");
             ServerStarted?.Invoke(this, EventArgs.Empty);
 
-            return true;
+            return Task.FromResult(true);
         }
         catch (Exception ex)
         {
             OutputReceived?.Invoke(this, $"[Server] 启动失败: {ex.Message}");
-            return false;
+            return Task.FromResult(false);
         }
     }
 
@@ -128,12 +128,12 @@ public class BackendService : IDisposable
     /// <summary>
     /// 启动 Web 前端 (Vite dev server)
     /// </summary>
-    public async Task<bool> StartWebAsync()
+    public Task<bool> StartWebAsync()
     {
         if (IsWebRunning)
         {
             OutputReceived?.Invoke(this, "[Web] Web前端已在运行中");
-            return true;
+            return Task.FromResult(true);
         }
 
         try
@@ -144,7 +144,7 @@ public class BackendService : IDisposable
             if (!Directory.Exists(WebPath))
             {
                 OutputReceived?.Invoke(this, $"[Web] 错误: 找不到 Web 目录: {WebPath}");
-                return false;
+                return Task.FromResult(false);
             }
 
             var startInfo = new ProcessStartInfo
@@ -186,12 +186,12 @@ public class BackendService : IDisposable
             OutputReceived?.Invoke(this, $"[Web] Web前端已启动 (PID: {_webProcess.Id})");
             WebStarted?.Invoke(this, EventArgs.Empty);
 
-            return true;
+            return Task.FromResult(true);
         }
         catch (Exception ex)
         {
             OutputReceived?.Invoke(this, $"[Web] 启动失败: {ex.Message}");
-            return false;
+            return Task.FromResult(false);
         }
     }
 

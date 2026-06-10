@@ -84,7 +84,15 @@ class SocketService {
     fun isConnected(): Boolean = socket?.connected() == true
 
     fun emit(event: String, data: Any) {
-        socket?.emit(event, JSONObject(gson.toJson(data)))
+        if (!isConnected()) {
+            android.util.Log.w("SocketService", "emit 失败：Socket 未连接 (event=$event)")
+            return
+        }
+        try {
+            socket?.emit(event, JSONObject(gson.toJson(data)))
+        } catch (e: Exception) {
+            android.util.Log.e("SocketService", "emit 异常: ${e.message}")
+        }
     }
 }
 

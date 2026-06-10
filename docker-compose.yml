@@ -1,0 +1,46 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ecs-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ecs
+      POSTGRES_PASSWORD: ecs_secret
+      POSTGRES_DB: ecs
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ecs"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ecs-net
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: ecs-server
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_URL: "postgresql://ecs:ecs_secret@postgres:5432/ecs"
+      CORS_ORIGIN: "*"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - ecs-net
+
+volumes:
+  pgdata:
+
+networks:
+  ecs-net:
+    driver: bridge

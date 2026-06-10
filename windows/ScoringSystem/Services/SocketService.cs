@@ -16,6 +16,7 @@ public class SocketService : IDisposable
     public event Action? OnConnected;
     public event Action? OnDisconnected;
     public event Action<MatchState>? OnScoreUpdate;
+    public event Action<MatchEvent>? OnMatchEvent;
     public event Action<string>? OnError;
 
     public async Task ConnectAsync(string serverUrl)
@@ -68,6 +69,34 @@ public class SocketService : IDisposable
                     if (state != null)
                     {
                         OnScoreUpdate?.Invoke(state);
+                    }
+                }
+                catch (Exception)
+                {
+                    // Ignore parse errors
+                }
+            });
+
+            _socket.On("match:event", response =>
+            {
+                try
+                {
+                    var json = response.ToString();
+                    // Server wraps: { event: { ... } }
+                    using var doc = JsonDocument.Parse(json);
+                    var eventJson = doc.RootElement.TryGetProperty("event", out var evProp)
+                        ? evProp.GetRawText()
+                        : json;
+
+                    var matchEvent = JsonSerializer.Deserialize<MatchEvent>(eventJson, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true,
+                        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
+                    });
+
+                    if (matchEvent != null)
+                    {
+                        OnMatchEvent?.Invoke(matchEvent);
                     }
                 }
                 catch (Exception)

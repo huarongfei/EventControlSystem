@@ -320,6 +320,11 @@ fun MainScreen(
     onReportTimeout: (String) -> Unit,
     onReportInjury: (String, String?) -> Unit,
     onShowFoulDialog: (String) -> Unit,
+    onReportYellowCard: (String) -> Unit,
+    onReportRedCard: (String) -> Unit,
+    onReportCornerKick: (String) -> Unit,
+    onReportOffside: (String) -> Unit,
+    onReportSideChange: () -> Unit,
     homeTeamId: String,
     awayTeamId: String,
     homeTeamName: String,
@@ -403,11 +408,11 @@ fun MainScreen(
                     onReportSubstitution = onReportSubstitution,
                     onReportTimeout = onReportTimeout,
                     onReportInjury = onReportInjury,
-                    onReportYellowCard = { teamId -> /* TODO */ },
-                    onReportRedCard = { teamId -> /* TODO */ },
-                    onReportCornerKick = { teamId -> /* TODO */ },
-                    onReportOffside = { teamId -> /* TODO */ },
-                    onReportSideChange = { /* TODO */ },
+                    onReportYellowCard = onReportYellowCard,
+                    onReportRedCard = onReportRedCard,
+                    onReportCornerKick = onReportCornerKick,
+                    onReportOffside = onReportOffside,
+                    onReportSideChange = onReportSideChange,
                     modifier = Modifier.weight(1f)
                 )
                 2 -> HistoryScreen(

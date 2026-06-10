@@ -348,6 +348,27 @@ public class ApiService
     }
 
     /// <summary>
+    /// 获取比赛详情（含队伍统计：得分、犯规等）
+    /// GET /api/matches/:id/detail
+    /// </summary>
+    public async Task<MatchDetailResponse?> GetMatchDetailAsync(string matchId)
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync($"{_baseUrl}/api/matches/{matchId}/detail");
+            response.EnsureSuccessStatusCode();
+
+            var json = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<MatchDetailResponse>(json, _jsonOptions);
+            return result;
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
     /// 获取所有支持的运动类型及其犯规数量
     /// </summary>
     public async Task<Dictionary<string, SportFoulInfo>> GetSportFoulInfoAsync()

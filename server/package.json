@@ -16,13 +16,17 @@
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
     "prisma:seed": "ts-node prisma/seed.ts",
-    "setup": "npm install && npx prisma generate && npx prisma db push"
+    "setup": "npm install && npx prisma generate && npx prisma db push",
+    "test": "jest --forceExit --detectOpenHandles",
+    "test:watch": "jest --watch --forceExit",
+    "test:coverage": "jest --coverage --forceExit"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
+    "express-rate-limit": "^8.5.2",
     "helmet": "^8.0.0",
     "socket.io": "^4.8.1",
     "uuid": "^11.0.3",
@@ -31,10 +35,15 @@
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
-    "@types/express": "^5.0.0",
+    "@types/express": "^4.17.21",
+    "@types/jest": "^30.0.0",
     "@types/node": "^22.9.0",
+    "@types/supertest": "^7.2.0",
     "@types/uuid": "^10.0.0",
+    "jest": "^30.4.2",
     "prisma": "^5.22.0",
+    "supertest": "^7.2.2",
+    "ts-jest": "^29.4.11",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.6.3"

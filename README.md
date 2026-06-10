@@ -2,7 +2,8 @@
 
 **开发者 / Developer:** Huafeirong  
 **GitHub:** https://github.com/huarongfei/EventControlSystem  
-**开源协议 / License:** MIT
+**开源协议 / License:** MIT  
+**CI/CD:** [![CI](https://github.com/huarongfei/EventControlSystem/actions/workflows/ci.yml/badge.svg)](https://github.com/huarongfei/EventControlSystem/actions/workflows/ci.yml)
 
 ---
 
@@ -21,11 +22,11 @@
                            ┌──────────────▼──────────────────────────┐
                            │           Web 后端 (Node.js)             │
                            │     Express REST API + Socket.IO        │
-                           │          端口: 3001                     │
+                           │     端口: 3001 | Docker 容器化           │
                            └────┬──────────────┬──────────────┬───────┘
                                 │              │              │
                     ┌───────────▼──┐  ┌──────▼─────┐  ┌───▼────────┐
-                    │   SQLite DB   │  │  Windows   │  │  Android   │
+                    │ PostgreSQL DB │  │  Windows   │  │  Android   │
                     │   (Prisma)    │  │计分裁判软件 │  │  裁判端    │
                     └───────────────┘  └─────────────┘  └────────────┘
                                       ┌─────────────┐
@@ -53,7 +54,29 @@
 
 ## 快速开始
 
-### 1. Web 后端
+### 🐳 Docker Compose（推荐）
+
+```bash
+# 克隆仓库
+git clone https://github.com/huarongfei/EventControlSystem.git
+cd EventControlSystem
+
+# 配置环境变量
+cp .env.example .env
+
+# 一键启动（PostgreSQL + Server）
+docker compose up -d
+
+# 查看日志
+docker compose logs -f server
+
+# 停止
+docker compose down
+```
+
+后端运行在 `http://localhost:3001`，PostgreSQL 数据持久化于 `pgdata` 卷。
+
+### 1. Web 后端（手动启动）
 
 ```bash
 cd server
@@ -192,6 +215,22 @@ npm run build
 
 ---
 
+## API 文档
+
+| 文档 | 地址 |
+|------|--------|
+| Swagger UI（交互式） | `http://localhost:3001/api/docs` |
+| OpenAPI 3.0 JSON | `http://localhost:3001/api/openapi.json` |
+| 手动 API 文档 | [docs/API.md](docs/API.md) |
+
+打开 Swagger UI 需要先启动服务器：
+```bash
+cd server && npm run dev
+# 浏览器访问 http://localhost:3001/api/docs
+```
+
+---
+
 ## 种子数据
 
 后端首次启动时会自动创建测试数据：
@@ -279,9 +318,19 @@ EventControlSystem/
 
 ---
 
+## CI/CD
+
+| 作业 | 触发 | 描述 |
+|------|------|------|
+| Server Lint & Build | Push / PR | TypeScript 编译检查 + ESLint |
+| Windows 客户端构建 | Push / PR | ScoringSystem + BroadcastControl .NET 构建 |
+| Docker 镜像构建 | Push / PR | 构建并验证 server Docker 镜像 |
+
+工作流配置：`.github/workflows/ci.yml`
+
 ## 数据库
 
-使用 SQLite（开发）/ PostgreSQL（生产），通过 Prisma ORM 管理。
+使用 PostgreSQL（Docker Compose 默认）/ SQLite（本地开发），通过 Prisma ORM 管理。
 
 ```bash
 # 创建迁移

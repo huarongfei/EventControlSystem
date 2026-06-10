@@ -147,7 +147,9 @@ fun RefereeApp(viewModel: RefereeViewModel) {
                 onNavigateBack = { navigateBack() },
                 onPeriodChange = { period -> viewModel.setPeriod(period) },
                 onTimerUpdate = { time -> viewModel.updateTimer(time) },
-                onMatchStatusChange = { /* 状态变更处理 */ }
+                onMatchStatusChange = { status ->
+                    viewModel.updateMatchStatus(status)
+                }
             )
         }
 

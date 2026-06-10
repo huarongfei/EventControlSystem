@@ -59,6 +59,11 @@ class RefereeViewModel(application: Application) : AndroidViewModel(application)
 
             // 3. 测试连接（调用一个简单的API验证服务器可达）
             testConnection()
+
+            // 4. 连接 Socket.IO（连接成功后自动建立实时通道）
+            if (_connectionStatus.value == ConnectionStatus.CONNECTED) {
+                connectSocket(address)
+            }
         }
     }
 
@@ -321,6 +326,66 @@ class RefereeViewModel(application: Application) : AndroidViewModel(application)
         _timerState.update { it.copy(currentTime = "12:00") }
     }
 
+    // 空事件处理函数 #2：updateMatchStatus（被 MainActivity 调用，此前不存在）
+    fun updateMatchStatus(status: String) {
+        viewModelScope.launch {
+            val match = _uiState.value.currentMatch ?: return@launch
+            // 通过 Socket.IO 通知服务端状态变更
+            if (socketService.isConnected()) {
+                socketService.emit("match:status_change", mapOf("matchId" to match.id, "status" to status))
+            }
+            // 同时更新本地 UI 状态
+            _uiState.update { it.copy(currentMatch = it.currentMatch?.copy(status = status)) }
+        }
+    }
+
+    // 空事件处理函数 #3：connectSocket（连接 Socket.IO，此前从未调用）
+    private fun connectSocket(serverUrl: String) {
+        viewModelScope.launch {
+            socketService.connect(serverUrl)
+                .catch { e ->
+                    _uiState.update { it.copy(error = "Socket 连接失败: ${e.message}") }
+                }
+                .onEach { event -> handleSocketEvent(event) }
+                .launchIn(this@launch)
+        }
+    }
+
+    // 空事件处理函数 #4：handleSocketEvent（处理 6 类 Socket 事件，此前完全未实现）
+    private fun handleSocketEvent(event: SocketEvent) {
+        when (event) {
+            is SocketEvent.Connected -> {
+                _connectionStatus.value = ConnectionStatus.CONNECTED
+            }
+            is SocketEvent.Disconnected -> {
+                _connectionStatus.value = ConnectionStatus.DISCONNECTED
+            }
+            is SocketEvent.Error -> {
+                _uiState.update { it.copy(error = event.message) }
+            }
+            is SocketEvent.ScoreUpdate -> {
+                _uiState.update { it.copy(currentMatch = event.match) }
+            }
+            is SocketEvent.MatchEventReceived -> {
+                addEvent(event.event)
+            }
+            is SocketEvent.StatusChange -> {
+                // 解析服务端下发的状态变更（data 为 JSON 字符串）
+                try {
+                    val json = org.json.JSONObject(event.data)
+                    val newStatus = json.optString("status", "")
+                    val matchId = json.optString("matchId", "")
+                    if (matchId == _uiState.value.currentMatch?.id) {
+                        _uiState.update { it.copy(currentMatch = it.currentMatch?.copy(status = newStatus)) }
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.w("RefereeViewModel", "StatusChange parse failed: ${e.message}")
+                }
+            }
+        }
+    }
+
+    // 空事件处理函数 #5 配套：在 connectToServer 成功后自动连接 Socket
     fun recordFoul(teamId: String, teamName: String, playerName: String, foulType: String) {
         val match = _uiState.value.currentMatch ?: return
         viewModelScope.launch {

@@ -104,7 +104,8 @@ export function initSocket(server: HttpServer): SocketIOServer {
       }
       try {
         const match = await matchService.getById(parsed.data.matchId);
-        if ((match as any).status !== 'running') {
+        const currentStatus = (match as Record<string, unknown>).status as string ?? 'not_started';
+        if (!['running', 'live'].includes(currentStatus)) {
           await matchService.updateStatus(parsed.data.matchId, { status: 'running' });
         }
         socket.emit('timer:ack', { success: true, action: 'start' });
@@ -126,7 +127,8 @@ export function initSocket(server: HttpServer): SocketIOServer {
       }
       try {
         const match = await matchService.getById(parsed.data.matchId);
-        if ((match as any).status !== 'paused') {
+        const currentStatus = (match as Record<string, unknown>).status as string ?? 'not_started';
+        if (!['paused', 'paused'].includes(currentStatus)) {
           await matchService.updateStatus(parsed.data.matchId, { status: 'paused' });
         }
         socket.emit('timer:ack', { success: true, action: 'pause' });
@@ -148,10 +150,11 @@ export function initSocket(server: HttpServer): SocketIOServer {
       }
       try {
         const match = await matchService.getById(parsed.data.matchId);
-        const m = match as any;
-        const period = parsed.data.period ?? m.currentPeriod;
-        const periodDuration = m.periodDuration ?? 10;
-        matchTimerService.resetToPeriod(parsed.data.matchId, period, periodDuration, m.sportType ?? 'basketball');
+        const m = match as Record<string, unknown>;
+        const period = parsed.data.period ?? (m.currentPeriod as number) ?? 1;
+        const periodDuration = (m.periodDuration as number) ?? 10;
+        const sportType = (m.sportType as string) ?? 'basketball';
+        matchTimerService.resetToPeriod(parsed.data.matchId, period, periodDuration, sportType);
         socket.emit('timer:ack', { success: true, action: 'reset' });
       } catch (err: any) {
         socket.emit('timer:ack', { success: false, action: 'reset', error: err.message });

@@ -66,8 +66,8 @@ export function onDisconnect(socket: Socket): void {
     connectionCountMap.set(ip, current - 1);
   }
 
-  // 清理该socket的速率限制数据
-  rateLimitMap.delete(socket.id);
+  // 清理该 IP 的速率限制数据（使用 address 作为 key，与 checkRateLimit 一致）
+  rateLimitMap.delete(ip);
 }
 
 // ─── 定期清理过期数据 ──────────────

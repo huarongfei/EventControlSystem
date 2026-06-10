@@ -3,6 +3,7 @@ import { matchService } from '../services/match.service';
 import { getIO } from '../socket';
 import { validateParamId, validateBody } from '../middleware/validate';
 import { parsePagination, paginate } from '../utils/pagination';
+import { AppError } from '../utils/AppError';
 
 const router = Router();
 
@@ -90,10 +91,21 @@ router.put('/:id/broadcast', validateParamId('id'), async (req: Request, res: Re
 });
 
 // GET /api/matches/:id/export — 导出比赛数据
-router.get('/:id/export', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/:id/export', validateParamId('id'), (req: Request, res: Response, next: NextFunction) => {
+  // format 参数白名单验证
+  const format = (req.query.format as string) || 'json';
+  const allowedFormats = ['json', 'csv'];
+  if (!allowedFormats.includes(format)) {
+    next(AppError.badRequest('INVALID_FORMAT', `导出格式必须是: ${allowedFormats.join(', ')}`));
+    return;
+  }
+  // 将验证后的 format 挂到 req 上供 handler 使用
+  req.body = { _validatedFormat: format };
+  next();
+}, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
-    const format = (req.query.format as string) || 'json';
+    const format = req.body._validatedFormat as string;
     const data = await matchService.exportMatch(id, format);
 
     if (format === 'csv') {
@@ -124,7 +136,11 @@ router.get('/:id/participants', async (req: Request, res: Response, next: NextFu
 });
 
 // POST /api/matches/:id/participants
-router.post('/:id/participants', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/:id/participants', validateParamId('id'), validateBody({ rules: [
+    { field: 'laneNumber', type: 'number', required: true, min: 1, max: 99 },
+    { field: 'athleteName', type: 'string', required: true, minLength: 1, maxLength: 100 },
+    { field: 'teamName', type: 'string', required: false, maxLength: 100 },
+  ] }), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
     const participant = await matchService.addParticipant(id, req.body);
@@ -135,7 +151,11 @@ router.post('/:id/participants', async (req: Request, res: Response, next: NextF
 });
 
 // PUT /api/matches/:id/participants/:pid/time
-router.put('/:id/participants/:pid/time', async (req: Request, res: Response, next: NextFunction) => {
+router.put('/:id/participants/:pid/time', validateParamId('id'), validateBody({ rules: [
+    { field: 'finalTime', type: 'string', required: false, maxLength: 20 },
+    { field: 'rank', type: 'number', required: false, min: 1, max: 999 },
+    { field: 'status', type: 'enum', required: false, values: ['pending', 'running', 'finished', 'dq'] },
+  ] }), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
     const pid = req.params.pid as string;
@@ -172,8 +192,8 @@ router.put('/:id/score', validateParamId('id'), validateBody({ rules: [
       matchId: match.id,
       homeScore: match.homeScore,
       awayScore: match.awayScore,
-      period: match.currentPeriod,
-      matchTime: match.matchTime,
+      quarter: match.currentPeriod,
+      gameClock: match.matchTime,
     });
 
     res.json(match);
@@ -183,7 +203,13 @@ router.put('/:id/score', validateParamId('id'), validateBody({ rules: [
 });
 
 // POST /api/matches/:id/events
-router.post('/:id/events', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/:id/events', validateParamId('id'), validateBody({ rules: [
+    { field: 'type', type: 'string', required: true, minLength: 1, maxLength: 50 },
+    { field: 'period', type: 'number', required: false, min: 1, max: 99 },
+    { field: 'teamId', type: 'uuid', required: false },
+    { field: 'playerId', type: 'uuid', required: false },
+    { field: 'detail', type: 'string', required: false, maxLength: 1000 },
+  ] }), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
     const matchEvent = await matchService.addEvent(id, req.body);
@@ -222,7 +248,13 @@ router.put('/:id/status', validateParamId('id'), validateBody({ rules: [
 });
 
 // PUT /api/matches/:id — 更新比赛信息（必须在 :id 之前，但在所有 /:id/xxx 之后）
-router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
+router.put('/:id', validateParamId('id'), validateBody({ rules: [
+    { field: 'sportType', type: 'string', required: false, maxLength: 30 },
+    { field: 'category', type: 'enum', required: false, values: ['team', 'race'] },
+    { field: 'status', type: 'string', required: false, maxLength: 20 },
+    { field: 'venue', type: 'string', required: false, maxLength: 200 },
+    { field: 'periodDuration', type: 'number', required: false, min: 1, max: 120 },
+  ] }), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
     const match = await matchService.update(id, req.body);

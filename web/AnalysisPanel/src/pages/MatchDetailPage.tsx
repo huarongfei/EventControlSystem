@@ -50,8 +50,8 @@ export default function MatchDetailPage() {
         }));
         setParticipants(participants);
         updateParticipants(participants);
-      } catch (err) {
-        console.error('Failed to fetch participants:', err);
+      } catch {
+        // 静默处理 — 选手数据加载失败不阻塞主界面
       } finally {
         setLoadingParticipants(false);
       }
@@ -114,8 +114,8 @@ export default function MatchDetailPage() {
       a.download = `match-${matchId}-${Date.now()}.json`;
       a.click();
       URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error('Export failed:', err);
+    } catch {
+      // 导出失败 — 用户可通过 UI 重试
     }
   }, [matchId]);
 

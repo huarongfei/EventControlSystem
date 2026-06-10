@@ -52,7 +52,10 @@ model match_events {
 
   @@index([matchId])
   @@index([matchId, type])
+  @@index([matchId, period])
   @@index([timestamp])
+  @@index([teamId])
+  @@index([playerId])
 }
 
 // ─── 比赛参与者（A类运动）─────────
@@ -103,6 +106,7 @@ model matches {
   @@index([status, sportType])
   @@index([homeTeamId])
   @@index([awayTeamId])
+  @@index([eventId, status])
 }
 
 // ─── 球员 ──────────────────────────
@@ -140,4 +144,7 @@ model users {
   passwordHash String
   role         String   @default("viewer")  // admin | operator | viewer
   createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([role])
 }

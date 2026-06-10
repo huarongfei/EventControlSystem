@@ -25,7 +25,9 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const message = error.response?.data?.message || error.message || '请求失败';
-    console.error('[API Error]', message);
+    if (import.meta.env.DEV) {
+      console.error('[API Error]', message);
+    }
     return Promise.reject(error);
   },
 );

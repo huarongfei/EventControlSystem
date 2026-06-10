@@ -13,7 +13,8 @@ export function useMatch(matchId: string | undefined) {
     setLoading,
   } = useMatchStore();
 
-  const fetchedRef = useRef(false);
+  // 用 trackId 替代 fetchedRef，确保 matchId 变化时重新获取
+  const trackIdRef = useRef<string | null>(null);
 
   const fetchMatch = useCallback(async () => {
     if (!matchId) return;
@@ -21,16 +22,16 @@ export function useMatch(matchId: string | undefined) {
     try {
       const match = await matchApi.getMatchById(matchId);
       setCurrentMatch(match);
-    } catch (err) {
-      console.error('Failed to fetch match:', err);
+    } catch {
+      // 获取比赛失败 — isLoading 会自动结束，match 保持 null 触发空状态 UI
     } finally {
       setLoading(false);
     }
   }, [matchId, setCurrentMatch, setLoading]);
 
   useEffect(() => {
-    if (matchId && !fetchedRef.current) {
-      fetchedRef.current = true;
+    if (matchId && matchId !== trackIdRef.current) {
+      trackIdRef.current = matchId;
       fetchMatch();
     }
   }, [matchId, fetchMatch]);

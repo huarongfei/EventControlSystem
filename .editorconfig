@@ -1,0 +1,46 @@
+# EditorConfig - https://editorconfig.org
+
+root = true
+
+# 默认规则
+[*]
+indent_style = space
+indent_size = 2
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+# Markdown
+[*.md]
+trim_trailing_whitespace = false
+
+# JSON
+[*.json]
+indent_size = 2
+
+# YAML
+[*.{yml,yaml}]
+indent_size = 2
+
+# C# / .NET
+[*.{cs,csproj}]
+indent_size = 4
+end_of_line = crlf
+
+# Kotlin / Java / Android
+[*.{kt,java,kts}]
+indent_size = 4
+ij_kotlin_imports_layout = *
+
+# ArkTS / HarmonyOS
+[*.ets]
+indent_size = 2
+
+# Shell scripts
+[*.{sh,bash}]
+end_of_line = lf
+
+# Dockerfile
+[Dockerfile]
+indent_size = 4

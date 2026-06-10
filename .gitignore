@@ -22,6 +22,8 @@ $RECYCLE.BIN/
 # Linux
 .*
 !/.env.example
+!/.editorconfig
+!/.github/
 !*~
 
 

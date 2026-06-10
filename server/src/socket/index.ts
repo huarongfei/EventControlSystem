@@ -12,6 +12,7 @@ import {
   ClientReportSchema,
 } from './validation';
 import { config } from '../config';
+import { checkRateLimit, checkConnectionLimit, onDisconnect, startCleanup } from './security';
 
 let io: SocketIOServer;
 
@@ -23,7 +24,12 @@ export function initSocket(server: HttpServer): SocketIOServer {
     },
     pingInterval: 10000,
     pingTimeout: 5000,
+    // 连接数限制（全局）
+    maxHttpBufferSize: 1e6, // 1MB 消息大小限制
   });
+
+  // 启动安全清理定时器
+  startCleanup(io);
 
   // 把 Socket.IO 实例注入计时器服务
   matchTimerService.setIO(io);
@@ -34,10 +40,21 @@ export function initSocket(server: HttpServer): SocketIOServer {
   });
 
   io.on('connection', (socket: Socket) => {
-    logger.info(`Socket connected: ${socket.id}`);
+    // ─── 连接安全检查 ──────────────
+    if (!checkConnectionLimit(socket)) {
+      logger.warn(`[Security] Rejected connection from ${socket.handshake.address}: too many connections`);
+      socket.disconnect(true);
+      return;
+    }
+
+    logger.info(`[Socket] Connected: ${socket.id} from ${socket.handshake.address} (total: ${io.sockets.sockets.size})`);
 
     // Join a match room
     socket.on('match:join', async (data: unknown) => {
+      if (!checkRateLimit(socket)) {
+        socket.emit('error', { message: 'Rate limit exceeded. Please slow down.' });
+        return;
+      }
       const parsed = MatchJoinSchema.safeParse(data);
       if (!parsed.success) {
         socket.emit('error', { message: 'Invalid match:join payload', details: parsed.error.issues });
@@ -47,7 +64,7 @@ export function initSocket(server: HttpServer): SocketIOServer {
         const matchId = typeof parsed.data === 'string' ? parsed.data : parsed.data.matchId;
         await matchService.getById(matchId);
         socket.join(`match:${matchId}`);
-        logger.info(`Socket ${socket.id} joined match room: ${matchId}`);
+        logger.info(`[Socket] ${socket.id} joined match room: ${matchId}`);
 
         // Send current match state to the joining client
         const match = await matchService.getById(matchId);
@@ -70,12 +87,16 @@ export function initSocket(server: HttpServer): SocketIOServer {
       }
       const matchId = typeof parsed.data === 'string' ? parsed.data : parsed.data.matchId;
       socket.leave(`match:${matchId}`);
-      logger.info(`Socket ${socket.id} left match room: ${matchId}`);
+      logger.info(`[Socket] ${socket.id} left match room: ${matchId}`);
     });
 
     // ─── 计时器控制 ───────────────────────────────────────
     // 客户端请求启动/恢复计时
     socket.on('timer:start', async (data: unknown) => {
+      if (!checkRateLimit(socket)) {
+        socket.emit('timer:ack', { success: false, action: 'start', error: 'Rate limit exceeded' });
+        return;
+      }
       const parsed = TimerStartSchema.safeParse(data);
       if (!parsed.success) {
         socket.emit('timer:ack', { success: false, action: 'start', error: 'Invalid payload', details: parsed.error.issues });
@@ -94,6 +115,10 @@ export function initSocket(server: HttpServer): SocketIOServer {
 
     // 客户端请求暂停计时
     socket.on('timer:pause', async (data: unknown) => {
+      if (!checkRateLimit(socket)) {
+        socket.emit('timer:ack', { success: false, action: 'pause', error: 'Rate limit exceeded' });
+        return;
+      }
       const parsed = TimerPauseSchema.safeParse(data);
       if (!parsed.success) {
         socket.emit('timer:ack', { success: false, action: 'pause', error: 'Invalid payload', details: parsed.error.issues });
@@ -112,6 +137,10 @@ export function initSocket(server: HttpServer): SocketIOServer {
 
     // 客户端请求重置计时（到当前节的初始时间）
     socket.on('timer:reset', async (data: unknown) => {
+      if (!checkRateLimit(socket)) {
+        socket.emit('timer:ack', { success: false, action: 'reset', error: 'Rate limit exceeded' });
+        return;
+      }
       const parsed = TimerResetSchema.safeParse(data);
       if (!parsed.success) {
         socket.emit('timer:ack', { success: false, action: 'reset', error: 'Invalid payload', details: parsed.error.issues });
@@ -129,8 +158,12 @@ export function initSocket(server: HttpServer): SocketIOServer {
       }
     });
 
-    // 客户端汇报事件（Android 裁判端）
+    // 客户端汇报事件（Android/HarmonyOS 裁判端）
     socket.on('client:report', async (data: unknown) => {
+      if (!checkRateLimit(socket)) {
+        socket.emit('sync:ack', { success: false, error: 'Rate limit exceeded' });
+        return;
+      }
       const parsed = ClientReportSchema.safeParse(data);
       if (!parsed.success) {
         socket.emit('sync:ack', {
@@ -169,9 +202,10 @@ export function initSocket(server: HttpServer): SocketIOServer {
       }
     });
 
-    // Handle disconnect
+    // Handle disconnect — 清理连接计数
     socket.on('disconnect', (reason: string) => {
-      logger.info(`Socket disconnected: ${socket.id}, reason: ${reason}`);
+      onDisconnect(socket);
+      logger.info(`[Socket] Disconnected: ${socket.id}, reason: ${reason}`);
     });
   });
 

@@ -7,18 +7,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ─── 导播场景（每比赛一个）─────────
 model broadcast_scenes {
-  id            String   @id @default(uuid())
-  matchId       String   @unique
+  id            String    @id @default(uuid())
+  matchId       String    @unique
   name          String?
   layout        String?
   primaryCamera String?
   overlay       String?
   transition    String?
-  createdAt     DateTime @default(now())
-  matches       matches  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  createdAt     DateTime  @default(now())
+  matches       matches   @relation(fields: [matchId], references: [id], onDelete: Cascade)
 }
 
+// ─── 赛事 ──────────────────────────
 model events {
   id         String    @id @default(uuid())
   name       String
@@ -29,22 +31,31 @@ model events {
   scoreRules String?
   createdAt  DateTime  @default(now())
   matches    matches[]
+
+  @@index([sportType])
+  @@index([status])
 }
 
+// ─── 比赛事件（得分/犯规/换人等）──
 model match_events {
-  id         String   @id @default(uuid())
+  id         String    @id @default(uuid())
   matchId    String
   type       String
   period     Int?
-  timestamp  DateTime @default(now())
+  timestamp  DateTime  @default(now())
   teamId     String?
   playerId   String?
   detail     String?
   reportedBy String?
-  synced     Boolean  @default(false)
-  matches    matches  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  synced     Boolean   @default(false)
+  matches    matches   @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  @@index([matchId])
+  @@index([matchId, type])
+  @@index([timestamp])
 }
 
+// ─── 比赛参与者（A类运动）─────────
 model match_participants {
   id          String   @id @default(uuid())
   matchId     String
@@ -57,8 +68,11 @@ model match_participants {
   status      String   @default("pending")
   createdAt   DateTime @default(now())
   matches     matches  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  @@index([matchId])
 }
 
+// ─── 比赛 ──────────────────────────
 model matches {
   id                              String               @id @default(uuid())
   eventId                         String
@@ -76,14 +90,22 @@ model matches {
   createdAt                       DateTime             @default(now())
   homeTeamId                      String
   awayTeamId                      String
+  venue                           String?              // 场地信息
   broadcast_scenes                broadcast_scenes?
   match_events                    match_events[]
   match_participants              match_participants[]
-  teams_matches_awayTeamIdToteams teams                @relation("matches_awayTeamIdToteams", fields: [awayTeamId], references: [id])
-  teams_matches_homeTeamIdToteams teams                @relation("matches_homeTeamIdToteams", fields: [homeTeamId], references: [id])
+  awayTeam                        teams                @relation("MatchAway", fields: [awayTeamId], references: [id])
+  homeTeam                        teams                @relation("MatchHome", fields: [homeTeamId], references: [id])
   events                          events               @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@index([status])
+  @@index([status, sportType])
+  @@index([homeTeamId])
+  @@index([awayTeamId])
 }
 
+// ─── 球员 ──────────────────────────
 model players {
   id        String   @id @default(uuid())
   teamId    String
@@ -92,23 +114,30 @@ model players {
   position  String?
   createdAt DateTime @default(now())
   teams     teams    @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@index([teamId])
+  @@index([teamId, number])
 }
 
+// ─── 队伍/队伍 ─────────────────────
 model teams {
-  id                                String    @id @default(uuid())
-  name                              String
-  shortName                         String?
-  logoUrl                           String?
-  createdAt                         DateTime  @default(now())
-  matches_matches_awayTeamIdToteams matches[] @relation("matches_awayTeamIdToteams")
-  matches_matches_homeTeamIdToteams matches[] @relation("matches_homeTeamIdToteams")
-  players                           players[]
+  id        String    @id @default(uuid())
+  name      String
+  shortName String?
+  logoUrl   String?
+  createdAt DateTime  @default(now())
+  homeMatches  matches[] @relation("MatchHome")
+  awayMatches  matches[] @relation("MatchAway")
+  players      players[]
+
+  @@index([name])
 }
 
+// ─── 用户 ──────────────────────────
 model users {
   id           String   @id @default(uuid())
   username     String   @unique
   passwordHash String
-  role         String   @default("viewer")
+  role         String   @default("viewer")  // admin | operator | viewer
   createdAt    DateTime @default(now())
 }

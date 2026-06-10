@@ -6,13 +6,13 @@ services:
     container_name: ecs-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ecs
-      POSTGRES_PASSWORD: ecs_secret
-      POSTGRES_DB: ecs
+      POSTGRES_USER: ${POSTGRES_USER:-ecs}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?请设置 POSTGRES_PASSWORD 环境变量}
+      POSTGRES_DB: ${POSTGRES_DB:-ecs}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ecs"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ecs}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -26,12 +26,13 @@ services:
     container_name: ecs-server
     restart: unless-stopped
     ports:
-      - "3001:3001"
+      - "${SERVER_PORT:-3001}:3001"
     environment:
       NODE_ENV: production
       PORT: 3001
-      DATABASE_URL: "postgresql://ecs:ecs_secret@postgres:5432/ecs"
-      CORS_ORIGIN: "*"
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-ecs}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-ecs}"
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+      JWT_SECRET: ${JWT_SECRET:?请设置 JWT_SECRET 环境变量}
     depends_on:
       postgres:
         condition: service_healthy

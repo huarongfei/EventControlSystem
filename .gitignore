@@ -21,7 +21,8 @@ $RECYCLE.BIN/
 
 # Linux
 .*
-*~
+!/.env.example
+!*~
 
 
 # ==================== 编辑器 ====================
@@ -229,3 +230,4 @@ _cache/
 # 微信开发者工具 (如果使用)
 **/project.private.config.json
 Harmony/
+android/app/

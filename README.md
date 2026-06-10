@@ -7,7 +7,7 @@
 
 ---
 
-大型体育比赛综合管理系统 — 集成导播控制、实时计分、赛况分析、移动裁判端于一体的五端协同平台。
+大型体育比赛综合管理系统 — 集成导播控制、实时计分、赛况分析、队伍报名、移动裁判端于一体的**六端协同**平台。
 
 🙌 **欢迎贡献！** 这是一个开源项目，热烈欢迎更多开发者参与开发。请访问 GitHub 提交 Issue 或 Pull Request。
 
@@ -39,7 +39,7 @@
               └───────────────────────────────────────────────┘
 ```
 
-## 五个端
+## 六个端
 
 | 端 | 技术栈 | 路径 |
 |----|--------|------|
@@ -49,6 +49,7 @@
 | **Android 裁判端** | Kotlin + Jetpack Compose + Material 3 | `android/RefereeApp/` |
 | **HarmonyOS 裁判端** | ArkTS + ArkUI + HarmonyOS NEXT SDK 6.0.2 | `refeerapp/` |
 | **Web 赛况分析面板** | React 18 + TypeScript + TailwindCSS + Vite | `web/AnalysisPanel/` |
+| **Web 队伍报名管理** | React 18 + TypeScript + TailwindCSS + Vite | `web/RegistrationApp/` |
 
 ---
 
@@ -213,6 +214,23 @@ npm run build
 
 面板运行在 `http://localhost:5173`（会自动代理 API 请求到 `:3001`）
 
+### 7. Web 队伍报名管理
+
+```bash
+cd web/RegistrationApp
+
+# 安装依赖
+npm install
+
+# 开发模式
+npm run dev
+
+# 生产构建
+npm run build
+```
+
+报名系统运行在 `http://localhost:5174`，提供队伍创建、球员管理、报名审核等功能。
+
 ---
 
 ## API 文档
@@ -298,7 +316,7 @@ EventControlSystem/
 │           ├── data/        # API + Socket + 本地
 │           └── domain/       # 领域模型
 │
-├── refereapp/                 # HarmonyOS 裁判端 (ArkTS)
+├── refeerapp/                # HarmonyOS 裁判端 (ArkTS)
 │   └── entry/src/main/ets/
 │       ├── entryability/     # 入口
 │       ├── model/            # MatchModels
@@ -307,13 +325,18 @@ EventControlSystem/
 │       ├── utils/          # DeviceInfo, NetworkMonitor
 │       └── pages/           # Index, MainPage, SettingsPage, HistoryPage
 │
-└── web/AnalysisPanel/       # Web 赛况面板
-    └── src/
-        ├── components/      # React 组件
-        ├── pages/          # 页面
-        ├── hooks/          # 自定义 Hooks
-        ├── services/       # API + Socket
-        └── store/          # Zustand 状态管理
+└── web/
+    ├── AnalysisPanel/        # Web 赛况面板 (React + Recharts)
+    │   └── src/
+    │       ├── components/   # React 组件
+    │       ├── pages/       # 页面
+    │       ├── hooks/       # 自定义 Hooks
+    │       ├── services/    # API + Socket
+    │       └── store/       # Zustand 状态管理
+    └── RegistrationApp/      # Web 队伍报名管理 (React + React Router)
+        └── src/
+            ├── pages/       # TeamList/Create/Edit, PlayerManagement
+            └── services/    # API 服务
 ```
 
 ---
@@ -352,7 +375,7 @@ npx prisma studio
 - **MVVM 架构**: Windows 端采用 CommunityToolkit.Mvvm
 - **Clean Architecture**: Android 端分层清晰
 - **响应式设计**: Web 面板 TailwindCSS + 深色主题
-- **多端协同**: 赛况数据五端实时共享
+- **多端协同**: 赛况数据六端实时共享
 
 ---
 
@@ -366,3 +389,4 @@ npx prisma studio
 | Web 前端 Vite 构建 | ✅ 成功 |
 | Android 项目 | ✅ 源码完整 |
 | HarmonyOS 项目 | ✅ 源码完整 |
+| 报名管理前端 | ✅ 可构建 |

@@ -87,6 +87,13 @@ export class MatchRepository {
     });
   }
 
+  async updateCurrentPeriod(id: string, currentPeriod: number): Promise<matches> {
+    return prisma.matches.update({
+      where: { id },
+      data: { currentPeriod },
+    });
+  }
+
   // ─── B类运动：选手管理 ─────────────────────
 
   async findParticipants(matchId: string): Promise<any[]> {

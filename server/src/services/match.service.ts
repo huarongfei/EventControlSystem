@@ -3,6 +3,7 @@ import {
   matchEventRepository,
   broadcastSceneRepository,
 } from '../repositories/match.repository';
+import logger from '../utils/logger';
 import { AppError } from '../utils/AppError';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
@@ -86,7 +87,10 @@ function getRule(match: any): SportRule {
     try {
       const parsed = JSON.parse((match as any).scoreRules);
       if (parsed.sportType) return parsed as SportRule;
-    } catch {}
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      logger.debug(`[getRule] Failed to parse match.scoreRules: ${msg}`);
+    }
   }
   // 其次从 Event → scoreRules 读取
   const event = (match as any).events;
@@ -94,7 +98,10 @@ function getRule(match: any): SportRule {
     try {
       const parsed = JSON.parse(event.scoreRules);
       if (parsed.sportType) return parsed as SportRule;
-    } catch {}
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      logger.debug(`[getRule] Failed to parse event.scoreRules: ${msg}`);
+    }
   }
   // 回退：根据 sportType 从内置规则获取
   const sportType = (match as any).sportType || event?.sportType || 'basketball';
@@ -566,7 +573,13 @@ export class MatchService {
     if (!event) {
       throw AppError.badRequest('EVENT_NOT_FOUND', `Event ${parsed.data.eventId} not found`);
     }
-    const eventRules: any = event.scoreRules ? JSON.parse(event.scoreRules) : null;
+    let eventRules: any = null;
+    if (event.scoreRules) {
+      try { eventRules = JSON.parse(event.scoreRules); } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e);
+        logger.warn(`[create] Failed to parse event.scoreRules: ${msg}`);
+      }
+    }
     return matchRepository.create({
       ...parsed.data,
       category: parsed.data.category ?? event.category ?? eventRules?.category ?? 'team',

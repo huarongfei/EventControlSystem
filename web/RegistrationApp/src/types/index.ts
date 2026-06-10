@@ -3,6 +3,7 @@ export interface Team {
   name: string;
   shortName?: string;
   logo?: string;
+  logoUrl?: string;  /* 后端 logo 字段的表单别名 */
   players?: Player[];
   createdAt?: string;
 }

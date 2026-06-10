@@ -106,6 +106,10 @@ export class MatchTimerService {
     const seconds = isCountdown ? periodDurationMinutes * 60 : 0;
     const matchTime = isCountdown ? this.formatTime(seconds) : '00:00';
     this.saveMatchTime(matchId, matchTime);
+    // 同步 currentPeriod 到数据库
+    matchRepository.updateCurrentPeriod(matchId, period).catch((err: Error) => {
+      logger.error(`[Timer] Failed to update currentPeriod for ${matchId}: ${err.message}`);
+    });
     if (this.io) {
       this.io.to(`match:${matchId}`).emit('match:clock', {
         matchId,
@@ -269,7 +273,9 @@ export class MatchTimerService {
         isRunning: false,
         isCountdown: state.isCountdown,
       });
-    }).catch(() => {});
+    }).catch((err: Error) => {
+      logger.error(`[Timer] Failed to broadcast paused state for ${matchId}: ${err.message}`);
+    });
   }
 
   private stopTimer(matchId: string) {
@@ -309,12 +315,18 @@ export class MatchTimerService {
     this.io.to(`match:${matchId}`).emit(event, payload);
   }
 
-  /** "MM:SS" → 总秒数 */
+  /** "MM:SS" → 总秒数（非法输入返回0而非NaN） */
   private parseTime(timeStr: string): number {
     if (!timeStr) return 0;
     const parts = timeStr.split(':');
     if (parts.length !== 2) return 0;
-    return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+    const mins = parseInt(parts[0], 10);
+    const secs = parseInt(parts[1], 10);
+    if (isNaN(mins) || isNaN(secs)) {
+      logger.warn(`[Timer] parseTime: invalid input "${timeStr}", falling back to 0`);
+      return 0;
+    }
+    return mins * 60 + secs;
   }
 
   /** 总秒数 → "MM:SS" */

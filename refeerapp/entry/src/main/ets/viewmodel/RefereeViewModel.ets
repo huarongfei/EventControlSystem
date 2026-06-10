@@ -294,7 +294,7 @@ export class RefereeViewModel {
   /** 断开连接 */
   disconnect(): void {
     socketService.disconnect();
-    apiService.destroy();
+    // ApiService 是无状态 HTTP 客户端，无需显式销毁
     this.setConnectionState(ConnectionState.DISCONNECTED);
     this.setMatchInfo(null);
     this.setFoulTypes([]);

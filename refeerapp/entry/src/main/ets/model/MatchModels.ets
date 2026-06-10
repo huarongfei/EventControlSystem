@@ -3,7 +3,7 @@
 /** 比赛状态 */
 export enum MatchStatus {
   PENDING = 'pending',     // 未开始
-  ONGOING = 'ongoing',     // 进行中
+  ONGOING = 'running',     // 进行中 (后端使用 'running')
   PAUSED = 'paused',       // 暂停
   FINISHED = 'finished',   // 已结束
   CANCELLED = 'cancelled'  // 已取消
@@ -13,7 +13,7 @@ export enum MatchStatus {
 export enum EventType {
   SCORE = 'score',           // 得分
   FOUL = 'foul',             // 犯规
-  SUBSTITUTION = 'sub',      // 换人
+  SUBSTITUTION = 'substitution',      // 换人 (后端使用 'substitution')
   TIMEOUT = 'timeout',       // 暂停请求
   INJURY = 'injury',         // 伤病
   QUARTER_CHANGE = 'quarter' // 节次变更

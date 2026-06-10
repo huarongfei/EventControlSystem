@@ -46,11 +46,16 @@ export default function TeamEdit() {
       return;
     }
 
+    if (!teamId) {
+      setError('缺少队伍ID');
+      return;
+    }
+
     setIsSubmitting(true);
     setError('');
 
     try {
-      await teamApi.updateTeam(teamId!, {
+      await teamApi.updateTeam(teamId, {
         name: formData.name.trim(),
         shortName: formData.shortName.trim() || undefined,
         logoUrl: formData.logoUrl.trim() || undefined,

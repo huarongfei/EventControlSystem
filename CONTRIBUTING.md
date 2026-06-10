@@ -168,14 +168,30 @@ Closes #123
 
 ```
 EventControlSystem/
-├── server/              # Node.js 后端
-├── windows/            # WPF Windows 应用
-│   ├── ScoringSystem/     # 计分裁判软件
-│   └── BroadcastControl/  # 导播控制软件
-├── android/            # Android 裁判端
-├── refereapp/          # HarmonyOS 裁判端
-└── web/                # Web 赛况面板
-    └── AnalysisPanel/
+├── server/                  # Node.js + Express + TypeScript 后端
+│   ├── src/
+│   │   ├── controllers/    # API 控制器（含请求验证中间件）
+│   │   ├── services/       # 业务逻辑层
+│   │   ├── repositories/   # Prisma 数据访问层
+│   │   ├── socket/         # Socket.IO 实时通信
+│   │   ├── middleware/     # 中间件（验证、请求ID、错误处理）
+│   │   └── utils/          # 工具类（日志、错误、Prisma客户端）
+│   ├── tests/              # Jest 集成测试
+│   └── prisma/             # 数据库 schema 和迁移
+├── windows/                # WPF + .NET 8.0 Windows 应用
+│   ├── ScoringSystem/       # 计分裁判软件（深色主题+快捷键）
+│   └── BroadcastControl/    # 导播控制软件（虚拟摄像机+转场）
+├── android/
+│   └── RefereeApp/         # Kotlin + Jetpack Compose 裁判端
+├── refeerapp/              # HarmonyOS NEXT (ArkTS) 裁判端
+│   └── entry/src/main/ets/
+│       ├── model/           # 数据模型（MatchModels.ets）
+│       ├── service/         # API/Socket/离线队列服务
+│       ├── viewmodel/       # MVVM 视图模型
+│       └── pages/           # UI 页面
+└── web/
+    ├── AnalysisPanel/       # React + Vite 赛况分析面板
+    └── RegistrationApp/     # React + Vite 队伍报名管理
 ```
 
 ---
@@ -195,7 +211,7 @@ EventControlSystem/
 - [ ] 新功能已添加适当的文档
 - [ ] Bug 修复已添加测试
 - [ ] 所有现有测试通过
-- [ ] 分支已基于最新的 `main` 分支
+- [ ] 分支已基于最新的 `master` 分支
 
 ---
 
@@ -213,7 +229,7 @@ EventControlSystem/
 
 ## 联系方式
 
-- GitHub Issues: [提交 Issue](https://github.com/YOUR_USERNAME/EventControlSystem/issues)
-- 邮箱: support@eventcontrol.example.com
+- GitHub Issues: [提交 Issue](https://github.com/huarongfei/EventControlSystem/issues)
+- 邮箱: github.com/huarongfei
 
 感谢您的贡献！

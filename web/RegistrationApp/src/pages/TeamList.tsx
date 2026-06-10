@@ -35,6 +35,7 @@ export default function TeamList() {
 
     try {
       await teamApi.deleteTeam(team.id);
+      setDeletingId(null);  // 重置删除状态
       fetchTeams();
     } catch (err) {
       setError(err instanceof Error ? err.message : '删除失败');

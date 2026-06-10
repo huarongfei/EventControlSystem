@@ -135,7 +135,7 @@ public class ApiService
             var json = JsonSerializer.Serialize(scoreUpdate, _jsonOptions);
             var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync($"{_baseUrl}/api/matches/{scoreUpdate.MatchId}/score", content);
+            var response = await _httpClient.PutAsync($"{_baseUrl}/api/matches/{scoreUpdate.MatchId}/score", content);
             return response.IsSuccessStatusCode;
         }
         catch (Exception ex)

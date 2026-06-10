@@ -128,6 +128,22 @@ app.use(errorHandler);
 // Initialize Socket.IO
 initSocket(server);
 
+// ─── 全局异常处理（捕获未处理的 Promise rejection 和同步异常）──
+process.on('unhandledRejection', (reason: unknown, _promise: Promise<unknown>) => {
+  logger.error('[Process] Unhandled Rejection — reason: %s', reason);
+});
+
+process.on('uncaughtException', (error: Error) => {
+  logger.error(
+    '[Process] Uncaught Exception: %s\n%s',
+    error.message,
+    error.stack || '(no stack)'
+  );
+  // For uncaught exceptions in a long-running server, exit to allow
+  // process manager (PM2/Docker/systemd) to restart with clean state.
+  process.exit(1);
+});
+
 // Start server
 // ─── 启动前环境变量校验 ──────────────────────────
 const requiredEnvVars: string[] = ['DATABASE_URL'];

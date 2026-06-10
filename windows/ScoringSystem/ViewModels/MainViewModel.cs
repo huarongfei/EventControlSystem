@@ -1491,9 +1491,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         AddEvent(matchEvent);
         await _apiService.UpdateScoreAsync(scoreUpdate);
-        await _socketService.EmitScoreUpdateAsync(scoreUpdate);
         await _apiService.AddMatchEventAsync(matchEvent);
-        await _socketService.EmitMatchEventAsync(matchEvent);
+        // Note: The server broadcasts score:update and match:event via Socket.IO
+        // after processing these REST API calls. We do NOT emit directly here
+        // to avoid duplicate events reaching other connected clients.
     }
 
     #endregion

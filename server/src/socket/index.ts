@@ -194,7 +194,7 @@ export function initSocket(server: HttpServer): SocketIOServer {
 
         // Send acknowledgment to the reporting client
         socket.emit('sync:ack', {
-          clientEventId: parsed.data.type,
+          clientEventId: (parsed.data as Record<string, unknown>).clientEventId ?? `${parsed.data.matchId}:${Date.now()}`,
           serverEventId: matchEvent.id,
           success: true,
         });

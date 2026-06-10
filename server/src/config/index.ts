@@ -49,7 +49,9 @@ export const config = {
   databaseUrl: process.env.DATABASE_URL || 'file:./dev.db',
 
   // ─── 安全 ────────────────────────
-  jwtSecret: isProduction ? requireEnv('JWT_SECRET') : (process.env.JWT_SECRET || 'dev-secret-change-in-production'),
+  jwtSecret: isProduction
+    ? requireEnv('JWT_SECRET')
+    : (process.env.JWT_SECRET || require('crypto').randomBytes(32).toString('hex')),
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '24h',
   corsOrigin: process.env.CORS_ORIGIN || (isProduction ? false : 'http://localhost:5173'),
 

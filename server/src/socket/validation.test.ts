@@ -9,7 +9,7 @@ import {
   TimerPauseSchema,
   TimerResetSchema,
   ClientReportSchema,
-} from '../src/socket/validation';
+} from './validation';
 
 describe('Socket.IO 数据校验', () => {
   // ========== MatchJoinSchema ==========

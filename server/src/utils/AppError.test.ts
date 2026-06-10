@@ -2,7 +2,7 @@
  * AppError.test.ts
  * 测试自定义错误类。
  */
-import { AppError, errorHandler } from '../src/utils/AppError';
+import { AppError, errorHandler } from './AppError';
 import { Request, Response, NextFunction } from 'express';
 
 describe('AppError', () => {

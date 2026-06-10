@@ -1,5 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { teamService } from '../services/team.service';
+import { validateParamId, validateBody } from '../middleware/validate';
 
 const router = Router();
 
@@ -24,7 +25,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
 });
 
 // 获取指定队伍
-router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/:id', validateParamId('id'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
     const team = await teamService.getById(id);
@@ -35,7 +36,7 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
 });
 
 // 更新队伍
-router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
+router.put('/:id', validateParamId('id'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
     const team = await teamService.update(id, req.body);
@@ -46,7 +47,7 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
 });
 
 // 删除队伍
-router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {
+router.delete('/:id', validateParamId('id'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
     const team = await teamService.delete(id);
@@ -68,7 +69,10 @@ router.get('/:id/players', async (req: Request, res: Response, next: NextFunctio
 });
 
 // 添加队员到队伍
-router.post('/:id/players', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/:id/players', validateParamId('id'), validateBody({ rules: [
+    { field: 'name', type: 'string', required: true },
+    { field: 'jerseyNumber', type: 'number', required: false },
+  ] }), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const teamId = req.params.id as string;
     const player = await teamService.addPlayer(teamId, req.body);

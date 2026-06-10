@@ -1,11 +1,16 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { matchService } from '../services/match.service';
 import { getIO } from '../socket';
+import { validateParamId, validateBody } from '../middleware/validate';
 
 const router = Router();
 
 // POST /api/matches — 创建比赛
-router.post('/', async (_req: Request, res: Response, next: NextFunction) => {
+router.post('/', validateBody({ rules: [
+    { field: 'eventId', type: 'uuid', required: true },
+    { field: 'homeTeamId', type: 'uuid', required: true },
+    { field: 'awayTeamId', type: 'uuid', required: true },
+  ] }), async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const match = await matchService.create(_req.body);
     res.status(201).json(match);
@@ -47,7 +52,7 @@ router.get('/:id/statistics', async (req: Request, res: Response, next: NextFunc
 });
 
 // GET /api/matches/:id/broadcast
-router.get('/:id/broadcast', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/:id/broadcast', validateParamId('id'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
     const scene = await matchService.getBroadcast(id);
@@ -58,7 +63,7 @@ router.get('/:id/broadcast', async (req: Request, res: Response, next: NextFunct
 });
 
 // PUT /api/matches/:id/broadcast
-router.put('/:id/broadcast', async (req: Request, res: Response, next: NextFunction) => {
+router.put('/:id/broadcast', validateParamId('id'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
     const scene = await matchService.updateBroadcast(id, req.body);
@@ -145,7 +150,10 @@ router.get('/:id/race-results', async (req: Request, res: Response, next: NextFu
 });
 
 // PUT /api/matches/:id/score
-router.put('/:id/score', async (req: Request, res: Response, next: NextFunction) => {
+router.put('/:id/score', validateParamId('id'), validateBody({ rules: [
+    { field: 'homeScore', type: 'number', required: false, min: 0 },
+    { field: 'awayScore', type: 'number', required: false, min: 0 },
+  ] }), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
     const match = await matchService.updateScore(id, req.body);
@@ -185,7 +193,9 @@ router.post('/:id/events', async (req: Request, res: Response, next: NextFunctio
 });
 
 // PUT /api/matches/:id/status
-router.put('/:id/status', async (req: Request, res: Response, next: NextFunction) => {
+router.put('/:id/status', validateParamId('id'), validateBody({ rules: [
+    { field: 'status', type: 'string', required: true },
+  ] }), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
     const match = await matchService.updateStatus(id, req.body);
@@ -215,7 +225,7 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
 });
 
 // DELETE /api/matches/:id — 删除比赛
-router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {
+router.delete('/:id', validateParamId('id'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
     const match = await matchService.delete(id);

@@ -10,26 +10,21 @@ const router = Router();
 
 /**
  * @route   GET /api/foul-types
- * @desc    获取所有犯规类型
+ * @desc    获取所有犯规类型（可按运动类型筛选）
  * @access  Public
  */
 router.get('/', async (req, res, next) => {
   try {
     const sportType = req.query.sportType as string;
-    
+
     let foulTypes;
     if (sportType) {
       foulTypes = getFoulTypesBySport(sportType);
     } else {
       foulTypes = getAllFoulTypes();
     }
-    
-    res.json({
-      success: true,
-      data: foulTypes,
-      total: foulTypes.length,
-      sportTypes: getSupportedSportTypes()
-    });
+
+    res.json(foulTypes);
   } catch (err) {
     next(err);
   }
@@ -37,16 +32,15 @@ router.get('/', async (req, res, next) => {
 
 /**
  * @route   GET /api/foul-types/sports
- * @desc    获取所有支持的运动类型
+ * @desc    获取所有支持的运动类型及犯规统计
  * @access  Public
  */
 router.get('/sports', async (req, res, next) => {
   try {
     const sports = getSupportedSportTypes();
-    
-    // 返回运动类型详细信息
+
     const sportInfo: { [key: string]: { name: string; nameEn: string; emoji: string; foulCount: number } } = {};
-    
+
     const allFoulTypes = getAllFoulTypes();
     sports.forEach(st => {
       const firstFoul = allFoulTypes.find(f => f.sportType === st);
@@ -57,11 +51,8 @@ router.get('/sports', async (req, res, next) => {
         foulCount: allFoulTypes.filter(f => f.sportType === st).length
       };
     });
-    
-    res.json({
-      success: true,
-      data: sportInfo
-    });
+
+    res.json(sportInfo);
   } catch (err) {
     next(err);
   }
@@ -75,18 +66,15 @@ router.get('/sports', async (req, res, next) => {
 router.get('/:id', async (req, res, next) => {
   try {
     const foulType = getFoulTypeById(req.params.id);
-    
+
     if (!foulType) {
       return res.status(404).json({
         error: 'FOUL_TYPE_NOT_FOUND',
         message: 'Foul type not found',
       });
     }
-    
-    res.json({
-      success: true,
-      data: foulType
-    });
+
+    res.json(foulType);
   } catch (err) {
     next(err);
   }

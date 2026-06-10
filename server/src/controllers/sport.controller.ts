@@ -29,7 +29,7 @@ router.get('/', (req: Request, res: Response, next: NextFunction) => {
       playerStats: s.playerStats,
     }));
 
-    res.json({ sports: sanitized });
+    res.json(sanitized);
   } catch (err) {
     next(err);
   }

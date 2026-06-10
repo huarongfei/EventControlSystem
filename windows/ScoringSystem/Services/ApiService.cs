@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net.Http;
 using System.Text.Json;
 using ScoringSystem.Models;
@@ -10,6 +11,11 @@ public class ApiService
     {
         Timeout = TimeSpan.FromSeconds(10)
     };
+
+    /// <summary>
+    /// Last error message from any API call — UI can display this to users.
+    /// </summary>
+    public string? LastError { get; private set; }
 
     private string _baseUrl = "http://localhost:3001";
 
@@ -25,6 +31,15 @@ public class ApiService
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
+    /// <summary>
+    /// Log an exception and store its message in LastError for UI display.
+    /// </summary>
+    private void LogError(string operation, Exception ex)
+    {
+        LastError = $"{operation}: {ex.Message}";
+        Debug.WriteLine($"[ApiService] {LastError}", "ApiError");
+    }
+
     public async Task<List<Event>> GetEventsAsync()
     {
         try
@@ -35,8 +50,9 @@ public class ApiService
             var json = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<List<Event>>(json, _jsonOptions) ?? new();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            LogError("GetEvents", ex);
             return new();
         }
     }
@@ -54,8 +70,9 @@ public class ApiService
             var responseJson = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<Event>(responseJson, _jsonOptions);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            LogError("CreateEvent", ex);
             return null;
         }
     }
@@ -70,8 +87,9 @@ public class ApiService
             var json = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<List<Match>>(json, _jsonOptions) ?? new();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            LogError("GetMatches", ex);
             return new();
         }
     }
@@ -86,8 +104,9 @@ public class ApiService
             var json = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<List<Match>>(json, _jsonOptions) ?? new();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            LogError("GetMatchesByEvent", ex);
             return new();
         }
     }
@@ -102,8 +121,9 @@ public class ApiService
             var json = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<Match>(json, _jsonOptions);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            LogError("GetMatch", ex);
             return null;
         }
     }
@@ -118,8 +138,9 @@ public class ApiService
             var response = await _httpClient.PostAsync($"{_baseUrl}/api/matches/{scoreUpdate.MatchId}/score", content);
             return response.IsSuccessStatusCode;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            LogError("UpdateScore", ex);
             return false;
         }
     }
@@ -134,8 +155,9 @@ public class ApiService
             var response = await _httpClient.PostAsync($"{_baseUrl}/api/matches/{matchEvent.MatchId}/events", content);
             return response.IsSuccessStatusCode;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            LogError("AddMatchEvent", ex);
             return false;
         }
     }
@@ -148,11 +170,12 @@ public class ApiService
             var json = JsonSerializer.Serialize(body);
             var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PatchAsync($"{_baseUrl}/api/matches/{matchId}", content);
+            var response = await _httpClient.PutAsync($"{_baseUrl}/api/matches/{matchId}/status", content);
             return response.IsSuccessStatusCode;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            LogError("UpdateMatchStatus", ex);
             return false;
         }
     }
@@ -172,8 +195,9 @@ public class ApiService
             var responseJson = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<Match>(responseJson, _jsonOptions);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            LogError("CreateMatch", ex);
             return null;
         }
     }
@@ -191,8 +215,9 @@ public class ApiService
             var responseJson = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<Match>(responseJson, _jsonOptions);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            LogError("UpdateMatch", ex);
             return null;
         }
     }
@@ -204,8 +229,9 @@ public class ApiService
             var response = await _httpClient.DeleteAsync($"{_baseUrl}/api/matches/{matchId}");
             return response.IsSuccessStatusCode;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            LogError("DeleteMatch", ex);
             return false;
         }
     }
@@ -221,8 +247,9 @@ public class ApiService
             var json = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<List<Team>>(json, _jsonOptions) ?? new();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            LogError("GetTeams", ex);
             return new();
         }
     }
@@ -240,8 +267,9 @@ public class ApiService
             var responseJson = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<Team>(responseJson, _jsonOptions);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            LogError("CreateTeam", ex);
             return null;
         }
     }
@@ -259,8 +287,9 @@ public class ApiService
             var responseJson = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<Team>(responseJson, _jsonOptions);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            LogError("UpdateTeam", ex);
             return null;
         }
     }
@@ -272,8 +301,9 @@ public class ApiService
             var response = await _httpClient.DeleteAsync($"{_baseUrl}/api/teams/{teamId}");
             return response.IsSuccessStatusCode;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            LogError("DeleteTeam", ex);
             return false;
         }
     }
@@ -288,8 +318,9 @@ public class ApiService
             var json = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<List<Player>>(json, _jsonOptions) ?? new();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            LogError("GetPlayers", ex);
             return new();
         }
     }
@@ -304,8 +335,9 @@ public class ApiService
             var json = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<Event>(json, _jsonOptions);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            LogError("GetEvent", ex);
             return null;
         }
     }
@@ -319,8 +351,9 @@ public class ApiService
             var response = await _httpClient.DeleteAsync($"{_baseUrl}/api/events/{eventId}");
             return response.IsSuccessStatusCode;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            LogError("DeleteEvent", ex);
             return false;
         }
     }
@@ -338,11 +371,12 @@ public class ApiService
             response.EnsureSuccessStatusCode();
 
             var json = await response.Content.ReadAsStringAsync();
-            var result = JsonSerializer.Deserialize<FoulTypeResponse>(json, _jsonOptions);
-            return result?.Data ?? new();
+            // API now returns array directly (unified response format)
+            return JsonSerializer.Deserialize<List<FoulType>>(json, _jsonOptions) ?? new();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            LogError("GetFoulTypes", ex);
             return new();
         }
     }
@@ -362,8 +396,9 @@ public class ApiService
             var result = JsonSerializer.Deserialize<MatchDetailResponse>(json, _jsonOptions);
             return result;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            LogError("GetMatchDetail", ex);
             return null;
         }
     }
@@ -379,11 +414,13 @@ public class ApiService
             response.EnsureSuccessStatusCode();
 
             var json = await response.Content.ReadAsStringAsync();
-            var result = JsonSerializer.Deserialize<SportInfoResponse>(json, _jsonOptions);
-            return result?.Data ?? new();
+            // API now returns object directly (unified response format)
+            var result = JsonSerializer.Deserialize<Dictionary<string, SportFoulInfo>>(json, _jsonOptions);
+            return result ?? new();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            LogError("GetSportFoulInfo", ex);
             return new();
         }
     }

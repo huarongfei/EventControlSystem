@@ -136,11 +136,10 @@ public class SocketService : IDisposable
 
         try
         {
-            var json = JsonSerializer.Serialize(scoreUpdate, new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
-            });
-            await _socket.EmitAsync("score:update", json);
+            // Send object directly — SocketIOClient handles JSON serialization internally.
+            // Previously we were calling JsonSerializer.Serialize() which caused double-encoding
+            // (the object became a JSON string, not a structured object on the server side).
+            await _socket.EmitAsync("score:update", scoreUpdate);
         }
         catch (Exception)
         {
@@ -154,11 +153,8 @@ public class SocketService : IDisposable
 
         try
         {
-            var json = JsonSerializer.Serialize(matchEvent, new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
-            });
-            await _socket.EmitAsync("match:event", json);
+            // Same fix: send object directly, no manual serialization.
+            await _socket.EmitAsync("match:event", matchEvent);
         }
         catch (Exception)
         {

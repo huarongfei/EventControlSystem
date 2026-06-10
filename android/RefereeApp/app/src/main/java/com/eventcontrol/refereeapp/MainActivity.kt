@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.eventcontrol.refereeapp.domain.model.SportRules
 import com.eventcontrol.refereeapp.ui.components.ConnectionStatusIndicator
@@ -36,7 +37,6 @@ import com.eventcontrol.refereeapp.ui.theme.OfflineWarning
 import com.eventcontrol.refereeapp.viewmodel.ConnectionState
 import com.eventcontrol.refereeapp.viewmodel.RefereeViewModel
 import com.eventcontrol.refereeapp.viewmodel.SyncState
-import androidx.activity.compose.BackHandler
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -91,12 +91,13 @@ fun RefereeApp(
     var showExitConfirmDialog by remember { mutableStateOf(false) }
 
     // 处理返回按钮和滑动返回
+    val context = LocalContext.current
     BackHandler {
         if (isConnected) {
             showExitConfirmDialog = true
         } else {
-            // 未连接时直接退出
-            (viewModel as? android.app.Activity)?.finish()
+            // 未连接时直接退出 — 通过 Context 获取 Activity 并 finish()
+            (context as? android.app.Activity)?.finish()
         }
     }
 

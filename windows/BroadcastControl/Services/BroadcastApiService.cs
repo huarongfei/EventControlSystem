@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -16,6 +17,11 @@ public class BroadcastApiService
         set => _baseUrl = value.TrimEnd('/');
     }
 
+    /// <summary>
+    /// Last error message from any API call — UI can display this to users.
+    /// </summary>
+    public string? LastError { get; private set; }
+
     public BroadcastApiService(HttpClient? httpClient = null)
     {
         _httpClient = httpClient ?? new HttpClient();
@@ -27,6 +33,15 @@ public class BroadcastApiService
         PropertyNameCaseInsensitive = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
+
+    /// <summary>
+    /// Log an exception and store its message in LastError for UI display.
+    /// </summary>
+    private void LogError(string operation, Exception ex)
+    {
+        LastError = $"{operation}: {ex.Message}";
+        Debug.WriteLine($"[BroadcastApi] {LastError}", "ApiError");
+    }
 
     /// <summary>
     /// GET /api/broadcast/:matchId - Fetch broadcast scene for a match
@@ -42,8 +57,9 @@ public class BroadcastApiService
             var json = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<BroadcastSceneResponse>(json, JsonOptions);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            LogError($"GetBroadcastScene({matchId})", ex);
             return null;
         }
     }
@@ -69,8 +85,9 @@ public class BroadcastApiService
             var responseJson = await response.Content.ReadAsStringAsync();
             return JsonSerializer.Deserialize<BroadcastSceneResponse>(responseJson, JsonOptions);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            LogError($"UpdateBroadcastScene({matchId})", ex);
             return null;
         }
     }

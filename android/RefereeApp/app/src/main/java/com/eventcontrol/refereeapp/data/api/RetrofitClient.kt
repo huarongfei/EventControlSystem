@@ -12,7 +12,12 @@ object RetrofitClient {
 
     fun initialize(baseUrl: String) {
         val loggingInterceptor = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
+            level = if (BuildConfig.DEBUG) {
+                HttpLoggingInterceptor.Level.BODY
+            } else {
+                // Production: only log basic request/response metadata, not full bodies (may contain sensitive data)
+                HttpLoggingInterceptor.Level.BASIC
+            }
         }
 
         val okHttpClient = OkHttpClient.Builder()

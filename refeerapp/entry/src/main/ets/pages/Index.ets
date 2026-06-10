@@ -26,7 +26,7 @@ function getStatusColor(status: string): string {
 @Entry
 @Component
 struct Index {
-  @State serverUrl: string = 'http://192.168.1.100:3001';
+  @State serverUrl: string = '';
   @State isLoading: boolean = false;
   @State isLoadingMatches: boolean = false;
   @State errorMsg: string = '';

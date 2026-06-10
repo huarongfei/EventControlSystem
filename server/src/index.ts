@@ -29,6 +29,10 @@ const app = express();
 const server = createServer(app);
 
 // Middleware
+// 信任反向代理（生产环境通过 nginx/Docker 部署时获取真实客户端 IP）
+if (config.nodeEnv === 'production') {
+  app.set('trust proxy', 1);
+}
 // 安全头（启用 CSP，仅允许同域 + Swagger UI CDN）
 app.use(helmet({
   contentSecurityPolicy: {

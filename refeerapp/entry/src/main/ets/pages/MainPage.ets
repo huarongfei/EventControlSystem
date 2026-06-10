@@ -78,6 +78,7 @@ struct MainPage {
   // 私有变量
   private longPressTimer: number = -1;
   private readonly LONG_PRESS_DURATION: number = 800; // 长按确认时间(ms)
+  private breakpointListener: ((bp: Breakpoint) => void) | null = null;
 
   aboutToAppear(): void {
     // 获取路由参数
@@ -98,9 +99,23 @@ struct MainPage {
   }
 
   private observeBreakpoint(): void {
-    ResponsiveLayout.addBreakpointListener((bp: Breakpoint) => {
+    this.breakpointListener = (bp: Breakpoint) => {
       this.currentBreakpoint = ResponsiveLayout.getBreakpointName();
-    });
+    };
+    ResponsiveLayout.addBreakpointListener(this.breakpointListener);
+  }
+
+  aboutToDisappear(): void {
+    // 清理断点监听器，防止页面销毁后回调引用已销毁的状态
+    if (this.breakpointListener) {
+      ResponsiveLayout.removeBreakpointListener(this.breakpointListener);
+      this.breakpointListener = null;
+    }
+    // 清理长按定时器
+    if (this.longPressTimer !== -1) {
+      clearTimeout(this.longPressTimer);
+      this.longPressTimer = -1;
+    }
   }
 
   async loadMatchData(): Promise<void> {
@@ -163,7 +178,7 @@ struct MainPage {
         this.timerData = data;
         this.displayTime = this.formatTime(data.remainingTime);
       },
-      onMatchEvent: (_data: object) => {
+      onMatchUpdate: (_data: object) => {
         // 暂不处理事件推送
       },
       onError: (msg: string) => {

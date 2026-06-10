@@ -183,7 +183,8 @@ export function initSocket(server: HttpServer): SocketIOServer {
           teamId: parsed.data.teamId,
           playerId: parsed.data.playerId,
           detail: parsed.data.detail,
-          reportedBy: parsed.data.reportedBy || socket.id,
+          // Only use client-provided identifier; socket.id is ephemeral and useless for auditing
+          reportedBy: parsed.data.reportedBy || null,
         });
 
         // Broadcast to all subscribers

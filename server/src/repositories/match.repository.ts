@@ -70,8 +70,15 @@ export class MatchRepository {
   async updateStatus(id: string, status: string): Promise<matches> {
     const data: Record<string, unknown> = { status };
 
-    if (status === 'running' && !data.startedAt) {
-      data.startedAt = new Date();
+    if (status === 'running') {
+      // 先查询数据库中是否已有 startedAt，避免从 paused 恢复时覆写原始开赛时间
+      const current = await prisma.matches.findUnique({
+        where: { id },
+        select: { startedAt: true },
+      });
+      if (!current?.startedAt) {
+        data.startedAt = new Date();
+      }
     }
     if (status === 'finished') {
       data.endedAt = new Date();

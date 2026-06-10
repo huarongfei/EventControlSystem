@@ -27,7 +27,7 @@ export interface SocketCallbacks {
   onDisconnect?: () => void;
   onScoreUpdate?: (data: ScoreUpdateData) => void;
   onTimerTick?: (data: TimerData) => void;
-  onMatchEvent?: (data: object) => void;
+  onMatchUpdate?: (data: object) => void;
   onError?: (msg: string) => void;
 }
 
@@ -209,6 +209,7 @@ export class SocketService {
         break;
       }
       default:
+        console.warn(`[Socket] Unknown EIO packet type: ${type}, pkt=${pkt.substring(0, 40)}`);
         break;
     }
   }
@@ -239,8 +240,8 @@ export class SocketService {
             const eventData = arr.length >= 2 ? arr[1] : {};
             this.handleSioEvent(eventName, eventData as Record<string, Object>);
           }
-        } catch {
-          // 忽略解析错误
+        } catch (err) {
+          console.warn(`[Socket] SIO_EVENT JSON parse error: ${String(err)}, raw=${jsonStr.substring(0, 80)}`);
         }
         break;
       }
@@ -263,7 +264,7 @@ export class SocketService {
         this.callbacks.onTimerTick?.(data as unknown as TimerData);
         break;
       case 'match:event':
-        this.callbacks.onMatchEvent?.(data);
+        this.callbacks.onMatchUpdate?.(data);
         break;
       case 'match:state':
         // 进入房间后收到完整状态，可触发得分更新

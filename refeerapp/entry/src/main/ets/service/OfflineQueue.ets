@@ -11,10 +11,7 @@ class OfflineQueue {
   /** 初始化，从存储恢复未同步的事件 */
   async init(): Promise<void> {
     try {
-      // 检查网络状态
-      this.isOnline = await this.checkNetwork();
-      
-      // 从存储恢复队列数据
+      // 从存储恢复队列数据（在线状态由外部通过 setOnline() 管理）
       const savedData = await storageService.getString(StorageKey.OFFLINE_QUEUE);
       if (savedData) {
         try {
@@ -34,12 +31,6 @@ class OfflineQueue {
       console.error('初始化离线队列失败:', error);
       this.queue = [];
     }
-  }
-
-  /** 检查网络状态 */
-  private async checkNetwork(): Promise<boolean> {
-    // 网络状态检查由外部管理
-    return this.isOnline;
   }
 
   /** 添加事件到队列 */

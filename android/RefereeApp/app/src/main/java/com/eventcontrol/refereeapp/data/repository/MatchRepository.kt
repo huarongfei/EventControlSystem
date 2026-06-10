@@ -63,14 +63,15 @@ class MatchRepository(
             if (response.isSuccessful && response.body()?.success == true) {
                 Result.success(event.copy(isSynced = true))
             } else {
-                // Save to offline queue
+                // Server rejected the event (e.g. validation error) — save to offline queue
                 offlineQueue.addEvent(event)
-                Result.success(event.copy(isSynced = false))
+                // Use a distinguishable exception so callers can detect offline fallback
+                Result.failure(OfflineFallbackException("Event saved to offline queue (server error)"))
             }
         } catch (e: Exception) {
-            // Network error, save to offline queue
+            // Network error — save to offline queue
             offlineQueue.addEvent(event)
-            Result.success(event.copy(isSynced = false))
+            Result.failure(OfflineFallbackException("Event saved to offline queue (network: ${e.message})"))
         }
     }
 
@@ -203,3 +204,9 @@ fun createMatchEvent(
     reportedBy = reportedBy,
     timestamp = System.currentTimeMillis()
 )
+
+/**
+ * Distinguishable exception thrown when an event could only be saved to the offline queue.
+ * Callers can use `is OfflineFallbackException` to detect this vs. genuine failures.
+ */
+class OfflineFallbackException(message: String) : Exception(message)

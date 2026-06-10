@@ -83,9 +83,9 @@ public class SocketService : IDisposable
                         OnScoreUpdate?.Invoke(state);
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Ignore parse errors
+                    System.Diagnostics.Debug.WriteLine($"[Socket] score:update parse error: {ex.Message}");
                 }
             });
 
@@ -106,9 +106,9 @@ public class SocketService : IDisposable
                         OnScenePresetUpdate?.Invoke(scene);
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Ignore parse errors
+                    System.Diagnostics.Debug.WriteLine($"[Socket] scene:preset_update parse error: {ex.Message}");
                 }
             });
 
@@ -129,9 +129,9 @@ public class SocketService : IDisposable
                         OnSwitchScene?.Invoke(scene);
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Ignore parse errors
+                    System.Diagnostics.Debug.WriteLine($"[Socket] broadcast:switchScene parse error: {ex.Message}");
                 }
             });
 
@@ -146,9 +146,9 @@ public class SocketService : IDisposable
                     var isRunning = data.RootElement.GetProperty("is_running").GetBoolean();
                     OnVirtualCameraStatus?.Invoke(status ?? "unknown", isRunning);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Ignore parse errors
+                    System.Diagnostics.Debug.WriteLine($"[Socket] virtual_camera:status parse error: {ex.Message}");
                 }
             });
 
@@ -165,9 +165,9 @@ public class SocketService : IDisposable
                         OnTransitionEffect?.Invoke(effect);
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Ignore parse errors
+                    System.Diagnostics.Debug.WriteLine($"[Socket] transition:effect parse error: {ex.Message}");
                 }
             });
 
@@ -188,9 +188,9 @@ public class SocketService : IDisposable
                         OnSlowMotionUpdate?.Invoke(state);
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Ignore parse errors
+                    System.Diagnostics.Debug.WriteLine($"[Socket] slowmotion:update parse error: {ex.Message}");
                 }
             });
 

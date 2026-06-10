@@ -36,7 +36,7 @@ import com.eventcontrol.refereeapp.ui.theme.RefereeAppTheme
 import com.eventcontrol.refereeapp.ui.theme.OfflineWarning
 import com.eventcontrol.refereeapp.viewmodel.ConnectionState
 import com.eventcontrol.refereeapp.viewmodel.RefereeViewModel
-import com.eventcontrol.refereeapp.viewmodel.SyncState
+import com.eventcontrol.refereeapp.data.local.DataStoreManager
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -72,8 +72,8 @@ fun RefereeApp(
     val foulTypes by viewModel.foulTypes.collectAsState()
     val foulTypesLoading by viewModel.foulTypesLoading.collectAsState()
 
-    // 默认使用模拟器地址，真机使用时用户需要修改为实际IP
-    var serverUrl by remember { mutableStateOf("http://10.0.2.2:3001") }
+    // 服务器地址（从 DataStore 加载，未保存时为空字符串）
+    var serverUrl by remember { mutableStateOf("") }
     var matchCode by remember { mutableStateOf("") }
     
     var showScoreDialog by remember { mutableStateOf(false) }
@@ -92,6 +92,16 @@ fun RefereeApp(
 
     // 处理返回按钮和滑动返回
     val context = LocalContext.current
+
+    // 从 DataStore 加载已保存的服务器 URL
+    val dataStoreManager = remember { DataStoreManager(context) }
+    LaunchedEffect(Unit) {
+        val savedUrl = dataStoreManager.getServerUrl()
+        if (savedUrl.isNotEmpty()) {
+            serverUrl = savedUrl
+        }
+    }
+
     BackHandler {
         if (isConnected) {
             showExitConfirmDialog = true

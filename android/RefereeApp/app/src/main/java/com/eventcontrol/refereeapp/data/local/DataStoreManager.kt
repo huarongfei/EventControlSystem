@@ -19,7 +19,7 @@ class DataStoreManager(private val context: Context) {
         private val LAST_SYNC_TIME = longPreferencesKey("last_sync_time")
         private val IS_DARK_MODE = booleanPreferencesKey("is_dark_mode")
 
-        const val DEFAULT_SERVER_URL = "http://192.168.2.3:3001"
+        const val DEFAULT_SERVER_URL = ""
     }
 
     val serverUrlFlow: Flow<String> = context.dataStore.data.map { preferences ->

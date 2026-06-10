@@ -75,6 +75,7 @@ export default function MatchDetailPage() {
       }
     });
     const unsubParticipant = socketService.onParticipantUpdate((data) => {
+      if (!data.matchId || !data.participantId) return;
       if (data.matchId === matchId) {
         setParticipants((prev) =>
           prev.map((p) =>

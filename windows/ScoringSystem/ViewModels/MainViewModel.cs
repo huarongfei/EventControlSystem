@@ -18,6 +18,27 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private DispatcherTimer? _timer;
     private bool _disposed;
 
+    /// <summary>
+    /// 安全地调度到 UI 线程 — 自动检查 App.Current 和 _disposed 状态。
+    /// </summary>
+    private void SafeDispatch(Action action)
+    {
+        var app = System.Windows.Application.Current;
+        if (app == null || _disposed) return;
+
+        try
+        {
+            app.Dispatcher.BeginInvoke(() =>
+            {
+                if (!_disposed) action();
+            });
+        }
+        catch (InvalidOperationException)
+        {
+            // Dispatcher 已关闭（应用正在关闭）
+        }
+    }
+
     #region Navigation
 
     [ObservableProperty]
@@ -273,7 +294,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     private void OnBackendOutput(object? sender, string output)
     {
-        App.Current.Dispatcher.Invoke(() =>
+        SafeDispatch(() =>
         {
             BackendLog.Add($"[{DateTime.Now:HH:mm:ss}] {output}");
             OnPropertyChanged(nameof(BackendLogText));
@@ -1111,7 +1132,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         _socketService.OnConnected += () =>
         {
-            App.Current.Dispatcher.Invoke(() =>
+            SafeDispatch(() =>
             {
                 IsConnected = true;
                 ConnectionStatus = "已连接";
@@ -1124,7 +1145,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         _socketService.OnDisconnected += () =>
         {
-            App.Current.Dispatcher.Invoke(() =>
+            SafeDispatch(() =>
             {
                 IsConnected = false;
                 ConnectionStatus = "连接已断开";
@@ -1140,7 +1161,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         _socketService.OnMatchEvent += (matchEvent) =>
         {
             // Update foul counts in real-time from remote clients
-            App.Current.Dispatcher.Invoke(() =>
+            SafeDispatch(() =>
             {
                 if (matchEvent.MatchId != SelectedMatch?.Id) return;
                 if (matchEvent.Type == "foul")
@@ -1153,7 +1174,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
         _socketService.OnError += (err) =>
         {
-            App.Current.Dispatcher.Invoke(() =>
+            SafeDispatch(() =>
             {
                 StatusMessage = $"⚠ {err}";
                 StatusBrush = new SolidColorBrush(Color.FromRgb(239, 35, 60));
@@ -1191,7 +1212,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     private void HandleScoreUpdate(MatchState state)
     {
-        App.Current.Dispatcher.Invoke(() =>
+        SafeDispatch(() =>
         {
             if (SelectedMatch?.Id == state.MatchId)
             {
@@ -1341,7 +1362,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             if (detail == null) return;
 
             // Dispatch to UI thread for property updates
-            Application.Current?.Dispatcher.Invoke(() =>
+            SafeDispatch(() =>
             {
                 HomeFouls = detail.HomeStats?.GetStat("犯规", 0) ?? 0;
                 AwayFouls = detail.AwayStats?.GetStat("犯规", 0) ?? 0;
@@ -1915,12 +1936,16 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     public void Dispose()
     {
-        if (!_disposed)
+        lock (this)
         {
-            _disposed = true;
-            _timer?.Stop();
-            _socketService.Dispose();
-            _backendService.Dispose();
+            if (!_disposed)
+            {
+                _disposed = true;
+                _timer?.Stop();
+                _socketService.Dispose();
+                _backendService.OutputReceived -= OnBackendOutput;
+                _backendService.Dispose();
+            }
         }
         GC.SuppressFinalize(this);
     }

@@ -30,6 +30,10 @@ class SocketService {
     }
 
     fun connect(serverUrl: String, matchId: String) {
+        // 如果已连接，先断开再重连
+        if (socket?.connected() == true) {
+            disconnect()
+        }
         try {
             _connectionState.value = ConnectionState.CONNECTING
 
@@ -93,7 +97,15 @@ class SocketService {
     }
 
     fun disconnect() {
-        socket?.disconnect()
+        socket?.let { s ->
+            // 移除所有事件监听器以防止内存泄漏
+            s.off(Socket.EVENT_CONNECT)
+            s.off(Socket.EVENT_DISCONNECT)
+            s.off(Socket.EVENT_CONNECT_ERROR)
+            s.off("match:state")
+            s.off("match:event")
+            s.disconnect()
+        }
         socket = null
         _connectionState.value = ConnectionState.DISCONNECTED
     }

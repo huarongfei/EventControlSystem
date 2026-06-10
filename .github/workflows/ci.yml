@@ -1,5 +1,13 @@
 name: EventControlSystem CI/CD
 
+# ── Actions 版本策略说明 ──────────────────────────────
+# 使用 major tag（如 @v4）而非 commit hash，原因：
+# 1. GitHub 官方推荐方式 — 自动指向最新安全版本
+# 2. 避免错过安全修复和 bug 修复（commit hash 需手动更新）
+# 3. GitHub Actions 的 major tag 由官方维护，供应链风险可控
+# 如需完全确定性构建，可切换到具体 commit hash
+# ──────────────────────────────────────────────────────────
+
 on:
   push:
     branches: [master]

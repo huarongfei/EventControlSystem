@@ -1,12 +1,21 @@
 import { prisma } from '../utils/prisma';
 import type { teams } from '@prisma/client';
+import { PaginationOptions } from '../utils/pagination';
 
-export class teamsRepository {
-  async findAll(): Promise<teams[]> {
-    return prisma.teams.findMany({
-      include: { players: { orderBy: { number: 'asc' } } },
-      orderBy: { createdAt: 'desc' },
-    });
+export class TeamsRepository {
+  async findAll(options?: PaginationOptions): Promise<{ items: teams[]; total: number }> {
+    const where = {};
+    const [items, total] = await Promise.all([
+      prisma.teams.findMany({
+        where,
+        include: { players: { orderBy: { number: 'asc' } } },
+        orderBy: { createdAt: 'desc' },
+        skip: options ? (options.page! - 1) * options.limit! : undefined,
+        take: options?.limit,
+      }),
+      prisma.teams.count({ where }),
+    ]);
+    return { items, total };
   }
 
   async findById(id: string): Promise<teams | null> {
@@ -45,4 +54,4 @@ export class teamsRepository {
   }
 }
 
-export const teamRepository = new teamsRepository();
+export const teamRepository = new TeamsRepository();

@@ -1,14 +1,20 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { teamService } from '../services/team.service';
 import { validateParamId, validateBody } from '../middleware/validate';
+import { parsePagination, paginate } from '../utils/pagination';
 
 const router = Router();
 
-// 获取所有队伍
-router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
+// 获取所有队伍（支持分页）
+router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const teams = await teamService.getAll();
-    res.json(teams);
+    const options = parsePagination(req.query);
+    const result = await teamService.getAll(options);
+    if (options.page || options.limit !== 20) {
+      res.json(paginate(result.data, result.total, options.page!, options.limit!));
+    } else {
+      res.json(result.data);
+    }
   } catch (err) {
     next(err);
   }
@@ -51,7 +57,7 @@ router.delete('/:id', validateParamId('id'), async (req: Request, res: Response,
   try {
     const id = req.params.id as string;
     const team = await teamService.delete(id);
-    res.json({ message: 'Team deleted successfully', team });
+    res.json({ deleted: team.id });
   } catch (err) {
     next(err);
   }
@@ -98,7 +104,7 @@ router.delete('/players/:playerId', async (req: Request, res: Response, next: Ne
   try {
     const playerId = req.params.playerId as string;
     const player = await teamService.deletePlayer(playerId);
-    res.json({ message: 'Player deleted successfully', player });
+    res.json({ deleted: player.id });
   } catch (err) {
     next(err);
   }

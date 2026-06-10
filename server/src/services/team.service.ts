@@ -3,6 +3,7 @@ import { AppError } from '../utils/AppError';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 import { prisma } from '../utils/prisma';
+import { PaginationOptions } from '../utils/pagination';
 
 const createTeamSchema = z.object({
   name: z.string().min(1, 'Team name is required'),
@@ -11,8 +12,12 @@ const createTeamSchema = z.object({
 });
 
 export class TeamService {
-  async getAll() {
-    return teamRepository.findAll();
+  async getAll(options?: PaginationOptions) {
+    const result = await teamRepository.findAll(options);
+    return {
+      data: result.items,
+      total: result.total,
+    };
   }
 
   async getById(id: string) {

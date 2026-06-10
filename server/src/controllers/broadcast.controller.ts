@@ -1,8 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { MatchService } from '../services/match.service';
+import { matchService } from '../services/match.service';
 
 const router = Router();
-const matchService = new MatchService();
 
 router.get('/:matchId', async (req: Request, res: Response, next: NextFunction) => {
   try {

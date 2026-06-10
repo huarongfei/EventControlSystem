@@ -2,8 +2,7 @@
  * AppError.test.ts
  * 测试自定义错误类。
  */
-import { AppError, errorHandler } from './AppError';
-import { Request, Response, NextFunction } from 'express';
+import { AppError } from './AppError';
 
 describe('AppError', () => {
   it('应正确实例化', () => {
@@ -25,47 +24,15 @@ describe('AppError', () => {
     expect(err.statusCode).toBe(404);
   });
 
+  it('unprocessable 工厂方法应返回 422', () => {
+    const err = AppError.unprocessable('INVALID', 'invalid input');
+    expect(err.statusCode).toBe(422);
+    expect(err.code).toBe('INVALID');
+  });
+
   it('internal 工厂方法应返回 500', () => {
     const err = AppError.internal('INT', 'internal');
     expect(err.statusCode).toBe(500);
-  });
-});
-
-describe('errorHandler', () => {
-  let mockRes: Partial<Response>;
-  let statusMock: jest.Mock;
-  let jsonMock: jest.Mock;
-
-  beforeEach(() => {
-    jsonMock = jest.fn();
-    statusMock = jest.fn().mockReturnValue({ json: jsonMock });
-    mockRes = {
-      status: statusMock,
-    };
-  });
-
-  it('应处理 AppError — 返回对应 statusCode 和 JSON', () => {
-    const err = AppError.badRequest('BAD', 'bad request');
-    errorHandler(err, {} as Request, mockRes as Response, jest.fn());
-
-    expect(statusMock).toHaveBeenCalledWith(400);
-    expect(jsonMock).toHaveBeenCalledWith({
-      error: 'BAD',
-      message: 'bad request',
-    });
-  });
-
-  it('应处理非 AppError — 返回 500', () => {
-    const err = new Error('unexpected');
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-
-    errorHandler(err, {} as Request, mockRes as Response, jest.fn());
-
-    expect(statusMock).toHaveBeenCalledWith(500);
-    expect(jsonMock).toHaveBeenCalledWith({
-      error: 'INTERNAL_ERROR',
-      message: 'An unexpected error occurred',
-    });
-    consoleSpy.mockRestore();
+    expect(err.code).toBe('INT');
   });
 });

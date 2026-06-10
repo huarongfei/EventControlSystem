@@ -3,6 +3,7 @@ import { AppError } from '../utils/AppError';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 import { getSportRule, SportRule } from '../config/sport-rules';
+import { PaginationOptions } from '../utils/pagination';
 
 const SPORT_TYPES = ['basketball', 'football', 'volleyball', 'badminton', 'tennis', 'table_tennis', 'swimming', 'running', 'custom'] as const;
 
@@ -14,8 +15,12 @@ const createEventSchema = z.object({
 });
 
 export class EventService {
-  async getAll() {
-    return eventRepository.findAll();
+  async getAll(options?: PaginationOptions) {
+    const result = await eventRepository.findAll(options);
+    return {
+      data: result.items,
+      total: result.total,
+    };
   }
 
   async getById(id: string) {

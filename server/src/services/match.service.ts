@@ -9,6 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 import { matchTimerService } from './match-timer.service';
 import { getSportRule, SportRule } from '../config/sport-rules';
+import { PaginationOptions } from '../utils/pagination';
 
 const ALL_EVENT_TYPES = [
   'score','foul','substitution','timeout','injury',
@@ -116,18 +117,24 @@ export class MatchService {
   //  获取比赛列表（Dashboard 用）
   // ════════════════════════════════════════
 
-  async getList() {
-    const matches = await matchRepository.findAll();
-    return this.formatMatchList(matches);
+  async getList(options?: PaginationOptions) {
+    const result = await matchRepository.findAll(options);
+    return {
+      data: this.formatMatchList(result.items),
+      total: result.total,
+    };
   }
 
   // ════════════════════════════════════════
   //  获取指定赛事下的比赛列表
   // ════════════════════════════════════════
 
-  async getListByEventId(eventId: string) {
+  async getListByEventId(eventId: string, options?: PaginationOptions) {
     const matches = await matchRepository.findByEventId(eventId);
-    return this.formatMatchList(matches);
+    return {
+      data: this.formatMatchList(matches),
+      total: matches.length,
+    };
   }
 
   private formatMatchList(matches: any[]) {
@@ -292,7 +299,7 @@ export class MatchService {
       periodLabel: rule.periodNames[match.currentPeriod - 1] ?? `第${match.currentPeriod}节`,
       gameClock: match.matchTime,
       startTime: match.startedAt?.toISOString() ?? match.createdAt.toISOString(),
-      venue: undefined,
+      venue: (match as any).venue || null,
     };
   }
 

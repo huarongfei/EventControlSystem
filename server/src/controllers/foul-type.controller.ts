@@ -78,8 +78,8 @@ router.get('/:id', async (req, res, next) => {
     
     if (!foulType) {
       return res.status(404).json({
-        success: false,
-        error: 'Foul type not found'
+        error: 'FOUL_TYPE_NOT_FOUND',
+        message: 'Foul type not found',
       });
     }
     

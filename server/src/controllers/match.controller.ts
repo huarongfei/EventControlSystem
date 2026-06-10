@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { matchService } from '../services/match.service';
 import { getIO } from '../socket';
 import { validateParamId, validateBody } from '../middleware/validate';
+import { parsePagination, paginate } from '../utils/pagination';
 
 const router = Router();
 
@@ -19,11 +20,18 @@ router.post('/', validateBody({ rules: [
   }
 });
 
-// GET /api/matches — 获取所有比赛列表
-router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
+// GET /api/matches — 获取所有比赛列表（支持分页）
+router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const matches = await matchService.getList();
-    res.json(matches);
+    const options = parsePagination(req.query);
+    const result = await matchService.getList(options);
+    if (options.page || options.limit !== 20) {
+      // 分页请求：返回标准分页格式
+      res.json(paginate(result.data, result.total, options.page!, options.limit!));
+    } else {
+      // 无分页参数：保持向后兼容
+      res.json(result.data);
+    }
   } catch (err) {
     next(err);
   }
@@ -229,7 +237,7 @@ router.delete('/:id', validateParamId('id'), async (req: Request, res: Response,
   try {
     const id = req.params.id as string;
     const match = await matchService.delete(id);
-    res.json({ success: true, deleted: match.id });
+    res.json({ deleted: match.id });
   } catch (err) {
     next(err);
   }

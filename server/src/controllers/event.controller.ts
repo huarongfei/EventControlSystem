@@ -1,13 +1,19 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { eventService } from '../services/event.service';
 import { matchService } from '../services/match.service';
+import { parsePagination, paginate } from '../utils/pagination';
 
 const router = Router();
 
-router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
+router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const events = await eventService.getAll();
-    res.json(events);
+    const options = parsePagination(req.query);
+    const result = await eventService.getAll(options);
+    if (options.page || options.limit !== 20) {
+      res.json(paginate(result.data, result.total, options.page!, options.limit!));
+    } else {
+      res.json(result.data);
+    }
   } catch (err) {
     next(err);
   }
@@ -32,15 +38,19 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-// GET /api/events/:id/matches — 获取赛事下的所有比赛
+// GET /api/events/:id/matches — 获取赛事下的所有比赛（支持分页）
 router.get('/:id/matches', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
     // 先检查赛事是否存在
     await eventService.getById(id);
-    // 获取该赛事下的比赛列表
-    const matches = await matchService.getListByEventId(id);
-    res.json(matches);
+    const options = parsePagination(req.query);
+    const result = await matchService.getListByEventId(id, options);
+    if (options.page || options.limit !== 20) {
+      res.json(paginate(result.data, result.total, options.page!, options.limit!));
+    } else {
+      res.json(result.data);
+    }
   } catch (err) {
     next(err);
   }
@@ -51,7 +61,7 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction) =>
   try {
     const id = req.params.id as string;
     const deleted = await eventService.delete(id);
-    res.json({ success: true, deleted });
+    res.json({ deleted: deleted.id });
   } catch (err) {
     next(err);
   }

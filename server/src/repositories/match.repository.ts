@@ -1,16 +1,25 @@
 import { prisma } from '../utils/prisma';
 import type { matches, match_events, broadcast_scenes, match_participants, events } from '@prisma/client';
+import { PaginationOptions } from '../utils/pagination';
 
 export class MatchRepository {
-  async findAll(): Promise<any[]> {
-    return prisma.matches.findMany({
-      orderBy: { createdAt: 'desc' },
-      include: {
-        teams_matches_homeTeamIdToteams: true,
-        teams_matches_awayTeamIdToteams: true,
-        events: true,
-      },
-    });
+  async findAll(options?: PaginationOptions): Promise<{ items: any[]; total: number }> {
+    const where = {};
+    const [items, total] = await Promise.all([
+      prisma.matches.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: options ? (options.page! - 1) * options.limit! : undefined,
+        take: options?.limit,
+        include: {
+          teams_matches_homeTeamIdToteams: true,
+          teams_matches_awayTeamIdToteams: true,
+          events: true,
+        },
+      }),
+      prisma.matches.count({ where }),
+    ]);
+    return { items, total };
   }
 
   async findById(id: string): Promise<any | null> {

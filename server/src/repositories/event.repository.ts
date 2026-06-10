@@ -1,16 +1,25 @@
 import { prisma } from '../utils/prisma';
 import type { events, matches } from '@prisma/client';
+import { PaginationOptions } from '../utils/pagination';
 
 export class EventRepository {
-  async findAll(): Promise<(events & { _count?: { matches: number } })[]> {
-    return prisma.events.findMany({
-      orderBy: { createdAt: 'desc' },
-      include: {
-        _count: {
-          select: { matches: true }
+  async findAll(options?: PaginationOptions): Promise<{ items: (events & { _count?: { matches: number } })[]; total: number }> {
+    const where = {};
+    const [items, total] = await Promise.all([
+      prisma.events.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: options ? (options.page! - 1) * options.limit! : undefined,
+        take: options?.limit,
+        include: {
+          _count: {
+            select: { matches: true }
+          }
         }
-      }
-    });
+      }),
+      prisma.events.count({ where }),
+    ]);
+    return { items, total };
   }
 
   async findById(id: string): Promise<events | null> {

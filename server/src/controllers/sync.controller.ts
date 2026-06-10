@@ -1,21 +1,9 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { matchEventRepository } from '../repositories/match.repository';
-import { v4 as uuidv4 } from 'uuid';
-import { z } from 'zod';
+import { matchService } from '../services/match.service';
 import { getIO } from '../socket';
+import logger from '../utils/logger';
 
 const router = Router();
-
-const syncEventSchema = z.object({
-  matchId: z.string().uuid(),
-  type: z.string(),
-  period: z.number().int().optional(),
-  teamId: z.string().optional(),
-  playerId: z.string().optional(),
-  detail: z.record(z.unknown()).optional(),
-  reportedBy: z.string().optional(),
-  clientTimestamp: z.string().optional(),
-});
 
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -31,40 +19,31 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
     const results: Array<{ success: boolean; id?: string; error?: string; clientTimestamp?: string }> = [];
 
     for (const event of events) {
-      const parsed = syncEventSchema.safeParse(event);
-      if (!parsed.success) {
-        results.push({
-          success: false,
-          error: parsed.error.errors.map(e => e.message).join(', '),
-          clientTimestamp: event.clientTimestamp,
-        });
-        continue;
-      }
-
       try {
-        const { detail, clientTimestamp, period, ...rest } = parsed.data;
-        const created = await matchEventRepository.create({
-          id: uuidv4(),
-          period: period,
-          ...rest,
-          detail: detail ? JSON.stringify(detail) : undefined,
+        // Delegate to MatchService.addEvent() for validation + match existence check
+        const created = await matchService.addEvent(event.matchId || '', {
+          type: event.type,
+          period: event.period,
+          teamId: event.teamId,
+          playerId: event.playerId,
+          detail: event.detail,
+          reportedBy: event.reportedBy || 'sync',
         });
 
         // Broadcast the synced event
         const io = getIO();
-        io.to(`match:${parsed.data.matchId}`).emit('match:event', {
-          event: created,
-        });
+        io.to(`match:${event.matchId}`).emit('match:event', { event: created });
 
         results.push({
           success: true,
           id: created.id,
-          clientTimestamp,
+          clientTimestamp: event.clientTimestamp,
         });
       } catch (err: any) {
+        logger.debug(`[sync] Event sync failed for ${event.clientTimestamp}: ${err.message}`);
         results.push({
           success: false,
-          error: err.message,
+          error: err.message || 'Sync failed',
           clientTimestamp: event.clientTimestamp,
         });
       }

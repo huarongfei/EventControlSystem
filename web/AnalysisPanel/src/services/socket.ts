@@ -35,7 +35,7 @@ class SocketService {
 
   /** 监听比分更新 */
   onScoreUpdate(callback: (data: ScoreUpdatePayload) => void): () => void {
-    return this.on('match:score_update', callback);
+    return this.on('score:update', callback);
   }
 
   /** 监听比赛事件 */

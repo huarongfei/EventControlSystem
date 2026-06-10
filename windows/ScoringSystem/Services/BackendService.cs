@@ -113,7 +113,36 @@ public class BackendService : IDisposable
         try
         {
             OutputReceived?.Invoke(this, "[Server] 正在停止后端服务...");
-            _serverProcess.Kill(entireProcessTree: true);
+            // 优雅关闭：先尝试发送 Ctrl+C（SIGTERM），等待进程自行退出
+            if (!_serverProcess.HasExited)
+            {
+                try
+                {
+                    // Windows 上通过 GenerateConsoleCtrlEvent 发送 Ctrl+C
+                    var killProc = Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "taskkill",
+                        Arguments = $"/pid {_serverProcess.Id} /t",
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                    });
+                    killProc?.WaitForExit(5000); // 等待5秒让进程优雅关闭
+
+                    if (!_serverProcess.HasExited)
+                    {
+                        // 超时后强制终止
+                        _serverProcess.Kill(entireProcessTree: true);
+                        _serverProcess.WaitForExit(3000);
+                    }
+                }
+                catch
+                {
+                    // 如果 taskkill 失败，直接 Kill
+                    if (!_serverProcess.HasExited)
+                        _serverProcess.Kill(entireProcessTree: true);
+                }
+            }
             _serverProcess.Dispose();
             _serverProcess = null;
             OutputReceived?.Invoke(this, "[Server] 后端服务已停止");
@@ -209,7 +238,30 @@ public class BackendService : IDisposable
         try
         {
             OutputReceived?.Invoke(this, "[Web] 正在停止Web前端...");
-            _webProcess.Kill(entireProcessTree: true);
+            // 优雅关闭：先尝试 taskkill 终止，超时后强制 Kill
+            if (!_webProcess.HasExited)
+            {
+                try
+                {
+                    var killProc = Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "taskkill",
+                        Arguments = $"/pid {_webProcess.Id} /t",
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                    });
+                    killProc?.WaitForExit(3000);
+
+                    if (!_webProcess.HasExited)
+                        _webProcess.Kill(entireProcessTree: true);
+                }
+                catch
+                {
+                    if (!_webProcess.HasExited)
+                        _webProcess.Kill(entireProcessTree: true);
+                }
+            }
             _webProcess.Dispose();
             _webProcess = null;
             OutputReceived?.Invoke(this, "[Web] Web前端已停止");

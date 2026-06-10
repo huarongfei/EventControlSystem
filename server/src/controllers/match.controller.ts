@@ -39,7 +39,7 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
 });
 
 // GET /api/matches/:id/detail — 获取比赛完整详情（必须在 :id 之前）
-router.get('/:id/detail', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/:id/detail', validateParamId('id'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
     const detail = await matchService.getDetail(id);
@@ -50,7 +50,7 @@ router.get('/:id/detail', async (req: Request, res: Response, next: NextFunction
 });
 
 // GET /api/matches/:id/statistics
-router.get('/:id/statistics', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/:id/statistics', validateParamId('id'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
     const statistics = await matchService.getStatistics(id);
@@ -125,7 +125,7 @@ router.get('/:id/export', validateParamId('id'), (req: Request, res: Response, n
 // B类运动：选手管理路由（在 /:id/* 之前）
 
 // GET /api/matches/:id/participants
-router.get('/:id/participants', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/:id/participants', validateParamId('id'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
     const participants = await matchService.getRaceResults(id);
@@ -167,7 +167,7 @@ router.put('/:id/participants/:pid/time', validateParamId('id'), validateBody({ 
 });
 
 // GET /api/matches/:id/race-results
-router.get('/:id/race-results', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/:id/race-results', validateParamId('id'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
     const results = await matchService.getRaceResults(id);
@@ -276,7 +276,7 @@ router.delete('/:id', validateParamId('id'), async (req: Request, res: Response,
 });
 
 // GET /api/matches/:id — 获取单场比赛（必须放在最后）
-router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/:id', validateParamId('id'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
     const match = await matchService.getById(id);

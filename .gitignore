@@ -24,7 +24,9 @@ $RECYCLE.BIN/
 !/.env.example
 !/.editorconfig
 !/.github/
-!*~
+!/.gitignore
+!/.prettierrc*
+!/.eslintrc*
 
 
 # ==================== 编辑器 ====================

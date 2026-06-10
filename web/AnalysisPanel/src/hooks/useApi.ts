@@ -11,8 +11,8 @@ export function useApi() {
     try {
       const matches = await matchApi.getMatches();
       setMatches(matches);
-    } catch (err) {
-      console.error('Failed to fetch matches:', err);
+    } catch {
+      // 获取比赛列表失败 — setLoading(false) 会在 finally 中执行
     } finally {
       setLoading(false);
     }

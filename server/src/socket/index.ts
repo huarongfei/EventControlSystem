@@ -19,7 +19,7 @@ let io: SocketIOServer;
 export function initSocket(server: HttpServer): SocketIOServer {
   io = new SocketIOServer(server, {
     cors: {
-      origin: config.corsOrigin,
+      origin: config.socketCorsOrigin || config.corsOrigin,
       methods: ['GET', 'POST'],
     },
     pingInterval: 10000,
@@ -128,7 +128,7 @@ export function initSocket(server: HttpServer): SocketIOServer {
       try {
         const match = await matchService.getById(parsed.data.matchId);
         const currentStatus = (match as Record<string, unknown>).status as string ?? 'not_started';
-        if (!['paused', 'paused'].includes(currentStatus)) {
+        if (!['running', 'live'].includes(currentStatus)) {
           await matchService.updateStatus(parsed.data.matchId, { status: 'paused' });
         }
         socket.emit('timer:ack', { success: true, action: 'pause' });

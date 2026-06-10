@@ -956,6 +956,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
         {
             _disposed = true;
             _socketService.Dispose();
+            (_broadcastService as IDisposable)?.Dispose();
+            (_apiService as IDisposable)?.Dispose();
         }
         GC.SuppressFinalize(this);
     }

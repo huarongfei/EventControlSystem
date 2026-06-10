@@ -21,7 +21,11 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
 });
 
 // 创建队伍
-router.post('/', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/', validateBody({ rules: [
+    { field: 'name', type: 'string', required: true, minLength: 1, maxLength: 100 },
+    { field: 'sportType', type: 'string', required: false, maxLength: 30 },
+    { field: 'abbreviation', type: 'string', required: false, maxLength: 10 },
+  ] }), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const team = await teamService.create(req.body);
     res.status(201).json(team);
@@ -42,7 +46,11 @@ router.get('/:id', validateParamId('id'), async (req: Request, res: Response, ne
 });
 
 // 更新队伍
-router.put('/:id', validateParamId('id'), async (req: Request, res: Response, next: NextFunction) => {
+router.put('/:id', validateParamId('id'), validateBody({ rules: [
+    { field: 'name', type: 'string', required: false, minLength: 1, maxLength: 100 },
+    { field: 'sportType', type: 'string', required: false, maxLength: 30 },
+    { field: 'abbreviation', type: 'string', required: false, maxLength: 10 },
+  ] }), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
     const team = await teamService.update(id, req.body);
@@ -64,7 +72,7 @@ router.delete('/:id', validateParamId('id'), async (req: Request, res: Response,
 });
 
 // 获取队伍的所有队员
-router.get('/:id/players', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/:id/players', validateParamId('id'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const teamId = req.params.id as string;
     const players = await teamService.getPlayers(teamId);
@@ -89,7 +97,10 @@ router.post('/:id/players', validateParamId('id'), validateBody({ rules: [
 });
 
 // 更新队员
-router.put('/players/:playerId', async (req: Request, res: Response, next: NextFunction) => {
+router.put('/players/:playerId', validateParamId('playerId'), validateBody({ rules: [
+    { field: 'name', type: 'string', required: false, minLength: 1, maxLength: 100 },
+    { field: 'jerseyNumber', type: 'number', required: false },
+  ] }), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const playerId = req.params.playerId as string;
     const player = await teamService.updatePlayer(playerId, req.body);
@@ -100,7 +111,7 @@ router.put('/players/:playerId', async (req: Request, res: Response, next: NextF
 });
 
 // 删除队员
-router.delete('/players/:playerId', async (req: Request, res: Response, next: NextFunction) => {
+router.delete('/players/:playerId', validateParamId('playerId'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const playerId = req.params.playerId as string;
     const player = await teamService.deletePlayer(playerId);

@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { eventService } from '../services/event.service';
 import { matchService } from '../services/match.service';
 import { parsePagination, paginate } from '../utils/pagination';
+import { validateParamId, validateBody } from '../middleware/validate';
 
 const router = Router();
 
@@ -19,7 +20,11 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-router.post('/', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/', validateBody({ rules: [
+    { field: 'name', type: 'string', required: true, minLength: 1, maxLength: 200 },
+    { field: 'sportType', type: 'string', required: false, maxLength: 30 },
+    { field: 'venue', type: 'string', required: false, maxLength: 200 },
+  ] }), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const event = await eventService.create(req.body);
     res.status(201).json(event);
@@ -28,7 +33,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/:id', validateParamId('id'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
     const event = await eventService.getById(id);
@@ -39,7 +44,7 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
 });
 
 // GET /api/events/:id/matches — 获取赛事下的所有比赛（支持分页）
-router.get('/:id/matches', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/:id/matches', validateParamId('id'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
     // 先检查赛事是否存在
@@ -57,7 +62,7 @@ router.get('/:id/matches', async (req: Request, res: Response, next: NextFunctio
 });
 
 // DELETE /api/events/:id — 删除赛事
-router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {
+router.delete('/:id', validateParamId('id'), async (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = req.params.id as string;
     const deleted = await eventService.delete(id);

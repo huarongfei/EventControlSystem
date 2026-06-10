@@ -50,7 +50,8 @@ services:
       NODE_ENV: production
       PORT: 3001
       DATABASE_URL: "postgresql://${POSTGRES_USER:-ecs}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-ecs}"
-      CORS_ORIGIN: ${CORS_ORIGIN:-*}
+      CORS_ORIGIN: ${CORS_ORIGIN:?请设置生产环境 CORS_ORIGIN（如 https://yourdomain.com）}
+      JWT_SECRET: ${JWT_SECRET:?请设置生产环境 JWT_SECRET}
       LOG_LEVEL: ${LOG_LEVEL:-info}
       LOG_DIR: /app/logs
     volumes:

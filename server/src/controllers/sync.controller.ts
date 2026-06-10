@@ -16,6 +16,16 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
       return;
     }
 
+    // 批量大小限制，防止 DoS
+    const MAX_BATCH_SIZE = 200;
+    if (events.length > MAX_BATCH_SIZE) {
+      res.status(413).json({
+        error: 'PAYLOAD_TOO_LARGE',
+        message: `单次同步最多 ${MAX_BATCH_SIZE} 个事件，当前 ${events.length} 个`,
+      });
+      return;
+    }
+
     const results: Array<{ success: boolean; id?: string; error?: string; clientTimestamp?: string }> = [];
 
     for (const event of events) {

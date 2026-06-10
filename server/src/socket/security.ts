@@ -73,8 +73,10 @@ export function onDisconnect(socket: Socket): void {
 // ─── 定期清理过期数据 ──────────────
 const CLEANUP_INTERVAL_MS = 60_000; // 每分钟清理一次
 
+let cleanupTimerId: ReturnType<typeof setInterval> | null = null;
+
 export function startCleanup(io: SocketIOServer): void {
-  setInterval(() => {
+  cleanupTimerId = setInterval(() => {
     const now = Date.now();
 
     // 清理过期的速率限制数据
@@ -88,4 +90,13 @@ export function startCleanup(io: SocketIOServer): void {
     const connCount = io.sockets.sockets.size;
     logger.debug(`[Security] Cleanup complete. Active sockets: ${connCount}, Tracked IPs: ${connectionCountMap.size}`);
   }, CLEANUP_INTERVAL_MS);
+}
+
+/** 停止安全清理定时器（供 shutdown 调用） */
+export function stopCleanup(): void {
+  if (cleanupTimerId !== null) {
+    clearInterval(cleanupTimerId);
+    cleanupTimerId = null;
+    logger.info('[Security] Cleanup timer stopped');
+  }
 }

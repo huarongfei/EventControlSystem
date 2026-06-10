@@ -21,9 +21,18 @@ import { syncController } from './controllers/sync.controller';
 import foulTypeController from './controllers/foul-type.controller';
 import { errorHandler } from './middleware/errorHandler';
 import { requestId } from './middleware/requestId';
-import { initSocket } from './socket';
+import { initSocket, stopCleanup } from './socket';
 import logger from './utils/logger';
 import { prisma } from './utils/prisma';
+import { MatchTimerService } from './services/match-timer.service';
+
+// 计时器服务实例（供 shutdown 使用）
+let matchTimerService: MatchTimerService | null = null;
+
+/** 设置计时器服务引用（由 socket/initSocket 回调注入） */
+export function setTimerService(service: MatchTimerService): void {
+  matchTimerService = service;
+}
 
 const app = express();
 const server = createServer(app);
@@ -163,6 +172,33 @@ if (config.nodeEnv === 'production' && !process.env.JWT_SECRET) {
 }
 
 logger.info(`[Startup] Environment validation passed (env=${config.nodeEnv})`);
+
+// ─── 优雅关闭 ─────────────────────────────────────
+function gracefulShutdown(signal: string): void {
+  logger.info(`[Shutdown] ${signal} received, shutting down gracefully...`);
+  // 停止计时器
+  if (matchTimerService) {
+    matchTimerService.destroyAll();
+  }
+  // 停止安全清理定时器
+  stopCleanup();
+  // 关闭 HTTP + Socket.IO
+  server.close(() => {
+    // 断开数据库连接
+    prisma.$disconnect().then(() => {
+      logger.info('[Shutdown] All resources released, exiting.');
+      process.exit(0);
+    });
+  });
+  // 强制退出超时（10s）
+  setTimeout(() => {
+    logger.warn('[Shutdown] Forced exit after timeout');
+    process.exit(1);
+  }, 10000);
+}
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 server.listen(config.port, () => {
   logger.info(`ECS Server running on port ${config.port}`);

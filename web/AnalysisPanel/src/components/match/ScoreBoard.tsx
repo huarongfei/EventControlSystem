@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import type { TeamStats, Team, Quarter, SportType } from '@/types';
 import { getSportRule, getPeriodLabel } from '@/config/sportRules';
 
@@ -16,17 +16,20 @@ interface Props {
 function AnimatedScore({ score }: { score: number }) {
   const [displayScore, setDisplayScore] = useState(score);
   const [animating, setAnimating] = useState(false);
+  const prevScoreRef = useRef(score);
 
   useEffect(() => {
-    if (score !== displayScore) {
-      setAnimating(true);
-      const timer = setTimeout(() => {
-        setDisplayScore(score);
-        setAnimating(false);
-      }, 200);
-      return () => clearTimeout(timer);
-    }
-  }, [score, displayScore]);
+    // 仅当 score 真正变化时触发动画（避免依赖 displayScore 导致的双重执行）
+    if (score === prevScoreRef.current) return;
+    prevScoreRef.current = score;
+
+    setAnimating(true);
+    const timer = setTimeout(() => {
+      setDisplayScore(score);
+      setAnimating(false);
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [score]);
 
   return (
     <span

@@ -486,6 +486,12 @@ export class MatchService {
 
   async exportMatch(id: string, format: string): Promise<string> {
     const detail = await this.getDetail(id);
+    const isJson = (format || 'csv').toLowerCase() === 'json';
+
+    if (isJson) {
+      return JSON.stringify(detail, null, 2);
+    }
+
     if (detail.category === 'race') {
       // B类：导出选手成绩
       const rows = ['选手', '队伍', '最终成绩', '排名'].join(',');
@@ -495,7 +501,7 @@ export class MatchService {
       }
       return lines.join('\n');
     }
-    // A类：导出球员统计
+    // A类：导出球员统计（CSV 格式）
     const d = detail as any;
     const rows = ['球员', '队伍', '得分', '犯规'].join(',');
     const players = [...(d.homePlayers || []), ...(d.awayPlayers || [])];

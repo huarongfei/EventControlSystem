@@ -36,11 +36,15 @@ export function useMatch(matchId: string | undefined) {
     }
   }, [matchId, fetchMatch]);
 
-  // 每 30 秒轮询一次（WebSocket 断开时的兜底）
+  // 每 30 秒轮询一次（仅作为 WebSocket 断开时的兜底机制）
+  // 当 Socket.IO 实时推送正常时，不需要额外 HTTP 轮询
   useEffect(() => {
     if (!matchId) return;
     const interval = setInterval(fetchMatch, 30000);
     return () => clearInterval(interval);
+    // 注意：fetchMatch 在 Socket 连接正常时仍会被调用，
+    // 但 setCurrentMatch 会幂等更新 store，开销可忽略。
+    // 如需严格仅在断线时轮询，需引入 socket 连接状态依赖。
   }, [matchId, fetchMatch]);
 
   return {

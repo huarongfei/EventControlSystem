@@ -28,8 +28,9 @@ public class ConfigService
                 Config = JsonSerializer.Deserialize<AppConfig>(json) ?? new AppConfig();
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"[ConfigService] LoadConfig failed: {ex.Message}");
             Config = new AppConfig();
         }
     }
@@ -45,9 +46,9 @@ public class ConfigService
             var json = JsonSerializer.Serialize(Config, new JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText(ConfigPath, json);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // Ignore save errors
+            System.Diagnostics.Debug.WriteLine($"[ConfigService] SaveConfig failed: {ex.Message}");
         }
     }
 }

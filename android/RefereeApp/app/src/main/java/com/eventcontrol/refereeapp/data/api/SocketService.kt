@@ -98,12 +98,8 @@ class SocketService {
 
     fun disconnect() {
         socket?.let { s ->
-            // 移除所有事件监听器以防止内存泄漏
-            s.off(Socket.EVENT_CONNECT)
-            s.off(Socket.EVENT_DISCONNECT)
-            s.off(Socket.EVENT_CONNECT_ERROR)
-            s.off("match:state")
-            s.off("match:event")
+            // 使用无参 off() 移除所有事件监听器，防止未来新增事件时遗漏清理
+            s.off()
             s.disconnect()
         }
         socket = null

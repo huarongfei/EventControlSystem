@@ -12,7 +12,8 @@ import {
   ClientReportSchema,
 } from './validation';
 import { config } from '../config';
-import { checkRateLimit, checkConnectionLimit, onDisconnect, startCleanup } from './security';
+import { checkRateLimit, checkConnectionLimit, onDisconnect, startCleanup, stopCleanup } from './security';
+import { setTimerService } from '../index';
 
 let io: SocketIOServer;
 
@@ -34,9 +35,13 @@ export function initSocket(server: HttpServer): SocketIOServer {
   // 把 Socket.IO 实例注入计时器服务
   matchTimerService.setIO(io);
 
+  // 向 index 注入计时器服务引用（供 shutdown 使用）
+  setTimerService(matchTimerService);
+
   // 恢复所有运行中的计时器（服务器刚启动时）
-  matchTimerService.recoverTimers(io).catch(err => {
-    logger.error(`[Timer] Failed to recover timers: ${err}`);
+  matchTimerService.recoverTimers(io).catch((err: unknown) => {
+    const msg = err instanceof Error ? err.message : String(err);
+    logger.error(`[Timer] Failed to recover timers: ${msg}`);
   });
 
   io.on('connection', (socket: Socket) => {
@@ -222,3 +227,5 @@ export function getIO(): SocketIOServer {
   }
   return io;
 }
+
+export { stopCleanup };

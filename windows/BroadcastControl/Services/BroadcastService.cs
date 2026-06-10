@@ -119,9 +119,9 @@ public class BroadcastService
             var json = JsonSerializer.Serialize(_scenes, options);
             File.WriteAllText(_presetFilePath, json);
         }
-        catch
+        catch (Exception ex)
         {
-            // Ignore save errors
+            System.Diagnostics.Debug.WriteLine($"[BroadcastService] SavePresets failed: {ex.Message}");
         }
     }
 
@@ -140,9 +140,9 @@ public class BroadcastService
                 }
             }
         }
-        catch
+        catch (Exception ex)
         {
-            // Ignore load errors, use defaults
+            System.Diagnostics.Debug.WriteLine($"[BroadcastService] LoadPresets failed: {ex.Message}");
         }
     }
 

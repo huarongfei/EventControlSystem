@@ -141,36 +141,39 @@ export class MatchRepository {
     });
   }
 
-  /** 按 finalTime 重新计算排名 */
+  /** 按 finalTime 重新计算排名（事务内原子更新） */
   async recalculateRanks(matchId: string): Promise<any[]> {
-    const participants = await this.findParticipants(matchId);
-    const finished = participants
-      .filter((p: any) => p.finalTime && p.status !== 'dq')
-      .sort((a: any, b: any) => (a.finalTime as string).localeCompare(b.finalTime as string));
+    return prisma.$transaction(async () => {
+      const participants = await this.findParticipants(matchId);
+      const finished = participants
+        .filter((p: any) => p.finalTime && p.status !== 'dq')
+        .sort((a: any, b: any) => (a.finalTime as string).localeCompare(b.finalTime as string));
 
-    const updates: Promise<any>[] = [];
-    finished.forEach((p: any, idx: number) => {
-      updates.push(
-        prisma.match_participants.update({
-          where: { id: p.id },
-          data: { rank: idx + 1 },
-        })
+      // 并发更新所有完赛选手排名
+      await Promise.all(
+        finished.map((p: any, idx: number) =>
+          prisma.match_participants.update({
+            where: { id: p.id },
+            data: { rank: idx + 1 },
+          })
+        )
       );
+
+      // DQ 的选手排在最后
+      const dq = participants.filter((p: any) => p.status === 'dq');
+      if (dq.length > 0) {
+        await Promise.all(
+          dq.map((p: any) =>
+            prisma.match_participants.update({
+              where: { id: p.id },
+              data: { rank: null },
+            })
+          )
+        );
+      }
+
+      return this.findParticipants(matchId);
     });
-
-    // DQ 的选手排在最后
-    const dq = participants.filter((p: any) => p.status === 'dq');
-    for (const p of dq) {
-      updates.push(
-        prisma.match_participants.update({
-          where: { id: p.id },
-          data: { rank: null },
-        })
-      );
-    }
-
-    await Promise.all(updates);
-    return this.findParticipants(matchId);
   }
 
   async create(data: {

@@ -16,6 +16,15 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private readonly BroadcastApiService _apiService;
     private bool _disposed;
 
+    // Saved event handler references for clean unsubscription in Dispose()
+    private readonly Action? _onConnectedHandler;
+    private readonly Action? _onDisconnectedHandler;
+    private readonly Action<MatchScoreState>? _onScoreUpdateHandler;
+    private readonly Action<BroadcastScene>? _onSwitchSceneHandler;
+    private readonly Action<string, bool>? _onVirtualCameraStatusHandler;
+    private readonly Action<SlowMotionState>? _onSlowMotionUpdateHandler;
+    private readonly Action<string>? _onErrorHandler;
+
     #region Observable Properties
 
     [ObservableProperty]
@@ -197,7 +206,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         LoadCameras();
         LoadScenes();
 
-        _socketService.OnConnected += () =>
+        _onConnectedHandler = () =>
         {
             App.Current.Dispatcher.Invoke(() =>
             {
@@ -207,8 +216,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
                 StatusMessage = string.Empty;
             });
         };
+        _socketService.OnConnected += _onConnectedHandler;
 
-        _socketService.OnDisconnected += () =>
+        _onDisconnectedHandler = () =>
         {
             App.Current.Dispatcher.Invoke(() =>
             {
@@ -218,12 +228,15 @@ public partial class MainViewModel : ObservableObject, IDisposable
                 StatusMessage = "⚠ WebSocket 连接已断开";
             });
         };
+        _socketService.OnDisconnected += _onDisconnectedHandler;
 
-        _socketService.OnScoreUpdate += HandleScoreUpdate;
+        _onScoreUpdateHandler = HandleScoreUpdate;
+        _socketService.OnScoreUpdate += _onScoreUpdateHandler;
 
-        _socketService.OnSwitchScene += HandleSwitchScene;
+        _onSwitchSceneHandler = HandleSwitchScene;
+        _socketService.OnSwitchScene += _onSwitchSceneHandler;
 
-        _socketService.OnVirtualCameraStatus += (status, isRunning) =>
+        _onVirtualCameraStatusHandler = (status, isRunning) =>
         {
             App.Current.Dispatcher.Invoke(() =>
             {
@@ -231,16 +244,19 @@ public partial class MainViewModel : ObservableObject, IDisposable
                 VirtualCameraStatus = isRunning ? "运行中" : "已停止";
             });
         };
+        _socketService.OnVirtualCameraStatus += _onVirtualCameraStatusHandler;
 
-        _socketService.OnSlowMotionUpdate += HandleSlowMotionUpdate;
+        _onSlowMotionUpdateHandler = HandleSlowMotionUpdate;
+        _socketService.OnSlowMotionUpdate += _onSlowMotionUpdateHandler;
 
-        _socketService.OnError += (err) =>
+        _onErrorHandler = (err) =>
         {
             App.Current.Dispatcher.Invoke(() =>
             {
                 StatusMessage = $"⚠ {err}";
             });
         };
+        _socketService.OnError += _onErrorHandler;
 
         // Check first run
         if (!LoadConfig())
@@ -955,6 +971,24 @@ public partial class MainViewModel : ObservableObject, IDisposable
         if (!_disposed)
         {
             _disposed = true;
+
+            // Unsubscribe from all SocketService events before disposing
+            // to prevent callbacks on a disposed ViewModel
+            if (_onConnectedHandler != null)
+                _socketService.OnConnected -= _onConnectedHandler;
+            if (_onDisconnectedHandler != null)
+                _socketService.OnDisconnected -= _onDisconnectedHandler;
+            if (_onScoreUpdateHandler != null)
+                _socketService.OnScoreUpdate -= _onScoreUpdateHandler;
+            if (_onSwitchSceneHandler != null)
+                _socketService.OnSwitchScene -= _onSwitchSceneHandler;
+            if (_onVirtualCameraStatusHandler != null)
+                _socketService.OnVirtualCameraStatus -= _onVirtualCameraStatusHandler;
+            if (_onSlowMotionUpdateHandler != null)
+                _socketService.OnSlowMotionUpdate -= _onSlowMotionUpdateHandler;
+            if (_onErrorHandler != null)
+                _socketService.OnError -= _onErrorHandler;
+
             _socketService.Dispose();
             (_broadcastService as IDisposable)?.Dispose();
             (_apiService as IDisposable)?.Dispose();

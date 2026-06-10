@@ -54,6 +54,27 @@ function normalizeStatKey(key: string): string {
   return STAT_FIELD_MAP[key] || key;
 }
 
+// ─── 比赛状态机：合法转换表 ──────────────────────────
+// 只有列出的目标状态才是合法的，防止非法跳转
+const ALLOWED_TRANSITIONS: Record<string, string[]> = {
+  not_started: ['running'],
+  running:   ['paused', 'finished'],
+  paused:    ['running', 'finished'],
+  finished:  [],           // 终态，不可再转换
+};
+
+/** 检查状态转换是否合法，不合法则抛出 AppError */
+function validateTransition(currentStatus: string, targetStatus: string): void {
+  const allowed = ALLOWED_TRANSITIONS[currentStatus];
+  if (!allowed || !allowed.includes(targetStatus)) {
+    throw AppError.badRequest(
+      'INVALID_STATUS_TRANSITION',
+      `Cannot transition from '${currentStatus}' to '${targetStatus}'. ` +
+      `Allowed: [${(allowed || []).join(', ') || 'none'}]`,
+    );
+  }
+}
+
 // ─── Schemas ──────────────────────────────────────────────────
 
 const updateScoreSchema = z.object({
@@ -70,6 +91,7 @@ const addEventSchema = z.object({
   playerId: z.string().uuid().optional(),
   detail: z.record(z.unknown()).optional(),
   reportedBy: z.string().optional(),
+  clientEventId: z.string().uuid().optional(),  // 客户端事件ID，用于幂等去重
 });
 
 const updateStatusSchema = z.object({
@@ -330,7 +352,9 @@ export class MatchService {
       playerId: ev.playerId,
       eventType: ev.type,
       quarter: ev.period ?? 1,
-      timestamp: (ev as any).timestamp?.toISOString() ?? new Date().toISOString(),
+      timestamp: (ev as any).timestamp
+        ? (ev as any).timestamp.toISOString()
+        : (logger.warn(`[buildTeamDetail] Event ${ev.id} has null/missing timestamp`), '1970-01-01T00:00:00.000Z'),
       gameClock: match.matchTime,
       description: this.formatEventDescription(ev, rule),
       points: ev.type === 'score' ? (ev.detail ? JSON.parse(ev.detail).points : 0) : undefined,
@@ -479,7 +503,7 @@ export class MatchService {
     for (const p of players) {
       const teamName = (d.homePlayers || []).includes(p)
         ? d.homeTeam.name : d.awayTeam.name;
-      lines.push([p.player.name, teamName, p['得分'] || 0, p['犯规'] || 0].join(','));
+      lines.push([p.player.name, teamName, p['points'] || 0, p['fouls'] || 0].join(','));
     }
     return lines.join('\n');
   }
@@ -519,12 +543,14 @@ export class MatchService {
     if (!match) {
       throw AppError.notFound('MATCH_NOT_FOUND', `Match with id ${id} not found`);
     }
-    const { detail, ...rest } = parsed.data;
+    const { detail, clientEventId, ...rest } = parsed.data;
     return matchEventRepository.create({
       id: uuidv4(),
       matchId: id,
       ...rest,
       detail: detail ? JSON.stringify(detail) : undefined,
+      // Store clientEventId for dedup on re-sync
+      ...(clientEventId && { clientEventId }),
     });
   }
 
@@ -570,6 +596,8 @@ export class MatchService {
     if (!match) {
       throw AppError.notFound('MATCH_NOT_FOUND', `Match with id ${id} not found`);
     }
+    // 状态机转换合法性验证
+    validateTransition(match.status, parsed.data.status);
     const updated = await matchRepository.updateStatus(id, parsed.data.status);
     const rule = getRule(updated);
     await matchTimerService.onStatusChange(id, parsed.data.status, {
@@ -674,6 +702,11 @@ export class MatchService {
     const match = await matchRepository.findById(id);
     if (!match) {
       throw AppError.notFound('MATCH_NOT_FOUND', `Match with id ${id} not found`);
+    }
+    // If status is being changed, route through updateStatus to ensure
+    // startedAt/endedAt timestamps and state machine validation are applied
+    if (parsed.data.status && parsed.data.status !== match.status) {
+      return matchRepository.updateStatus(id, parsed.data.status);
     }
     return matchRepository.update(id, parsed.data);
   }

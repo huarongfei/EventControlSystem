@@ -26,11 +26,11 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const options = parsePagination(req.query);
     const result = await matchService.getList(options);
-    if (options.page || options.limit !== 20) {
-      // 分页请求：返回标准分页格式
+    // Only return paginated format when client explicitly requests it
+    const hasExplicitPagination = req.query.page !== undefined || req.query.limit !== undefined;
+    if (hasExplicitPagination) {
       res.json(paginate(result.data, result.total, options.page!, options.limit!));
     } else {
-      // 无分页参数：保持向后兼容
       res.json(result.data);
     }
   } catch (err) {

@@ -39,17 +39,18 @@ model events {
 
 // ─── 比赛事件（得分/犯规/换人等）──
 model match_events {
-  id         String    @id @default(uuid())
-  matchId    String
-  type       String
-  period     Int?
-  timestamp  DateTime  @default(now())
-  teamId     String?
-  playerId   String?
-  detail     String?
-  reportedBy String?
-  synced     Boolean   @default(false)
-  matches    matches   @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  id            String    @id @default(uuid())
+  matchId       String
+  type          String
+  period        Int?
+  timestamp     DateTime  @default(now())
+  teamId        String?
+  playerId      String?
+  detail        String?
+  reportedBy    String?
+  clientEventId String?   @unique  // 客户端事件ID，用于幂等去重
+  synced        Boolean   @default(false)
+  matches       matches   @relation(fields: [matchId], references: [id], onDelete: Cascade)
 
   @@index([matchId])
   @@index([matchId, type])

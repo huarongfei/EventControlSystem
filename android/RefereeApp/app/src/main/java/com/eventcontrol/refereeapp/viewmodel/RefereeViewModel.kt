@@ -401,18 +401,19 @@ class RefereeViewModel(application: Application) : AndroidViewModel(application)
     }
 
     private suspend fun processEvent(event: MatchEvent) {
-        // Emit via socket for real-time update
+        // Emit via socket for real-time update (triggers server-side matchService.addEvent)
         socketService.emitEvent(event)
 
         // Save to local list
         _matchEvents.update { list -> list + event }
 
-        // Try to sync
-        repository?.reportEvent(event)?.onSuccess { syncedEvent ->
-            if (!syncedEvent.isSynced) {
-                _uiState.update { it.copy(isOfflineMode = true) }
-            }
-        }
+        // Note: We do NOT call repository.reportEvent() here because emitEvent()
+        // already sends the event to the server via Socket.IO client:report,
+        // which triggers matchService.addEvent() server-side. Calling both would
+        // create duplicate database records.
+        //
+        // If the socket send fails, the event remains in _matchEvents and can be
+        // synced later via syncOfflineEvents().
     }
 
     fun syncOfflineEvents() {

@@ -128,7 +128,7 @@ export function initSocket(server: HttpServer): SocketIOServer {
       try {
         const match = await matchService.getById(parsed.data.matchId);
         const currentStatus = (match as Record<string, unknown>).status as string ?? 'not_started';
-        if (!['running', 'live'].includes(currentStatus)) {
+        if (['running', 'live'].includes(currentStatus)) {
           await matchService.updateStatus(parsed.data.matchId, { status: 'paused' });
         }
         socket.emit('timer:ack', { success: true, action: 'pause' });

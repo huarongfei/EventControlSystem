@@ -241,8 +241,15 @@ export class MatchEventRepository {
     playerId?: string;
     detail?: string;
     reportedBy?: string;
+    clientEventId?: string;
   }): Promise<match_events> {
     return prisma.match_events.create({ data });
+  }
+
+  async findByClientEventId(clientEventId: string): Promise<match_events | null> {
+    return prisma.match_events.findFirst({
+      where: { clientEventId },
+    });
   }
 
   async findStatsByMatchId(matchId: string): Promise<any[]> {

@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { matchService } from '../services/match.service';
 import { getIO } from '../socket';
+import { matchEventRepository } from '../repositories/match.repository';
 import logger from '../utils/logger';
 
 const router = Router();
@@ -28,8 +29,33 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
 
     const results: Array<{ success: boolean; id?: string; error?: string; clientTimestamp?: string }> = [];
 
+    // Track seen clientEventIds for dedup within this batch
+    const seenClientIds = new Set<string>();
+
     for (const event of events) {
       try {
+        // Dedup: skip if we've already processed this clientEventId in this batch
+        if (event.clientEventId) {
+          if (seenClientIds.has(event.clientEventId)) {
+            results.push({
+              success: true,
+              clientTimestamp: event.clientTimestamp,
+            });
+            continue;
+          }
+          // Check if this event was already synced in a previous batch
+          const existing = await matchEventRepository.findByClientEventId(event.clientEventId);
+          if (existing) {
+            results.push({
+              success: true,
+              id: existing.id,
+              clientTimestamp: event.clientTimestamp,
+            });
+            continue;
+          }
+          seenClientIds.add(event.clientEventId);
+        }
+
         // Delegate to MatchService.addEvent() for validation + match existence check
         const created = await matchService.addEvent(event.matchId || '', {
           type: event.type,
@@ -38,6 +64,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
           playerId: event.playerId,
           detail: event.detail,
           reportedBy: event.reportedBy || 'sync',
+          clientEventId: event.clientEventId || null,
         });
 
         // Broadcast the synced event
